@@ -16,22 +16,42 @@ $xml = new SimpleXMLElement(
   <reg>
   </reg>
   <attendant>
+    <behaviors>
+      <display>
+        <spontaneousCallAppearances>
+        </spontaneousCallAppearances>
+      </display>
+    </behaviors>
   </attendant>
   <apps>
-	<push apps.push.messageType="5" apps.push.username="Polycom">
-	</push>
+    <push apps.push.messageType="5" apps.push.username="Polycom">
+    </push>
+    <ucdesktop>
+    </ucdesktop>
   </apps>
   <call>
     <missedCallTracking>
     </missedCallTracking>
 	<callWaiting>
-	</callWaiting>	    
+	</callWaiting>    
 	<hold>
       <localReminder>
       </localReminder>
     </hold>
   </call>
-   <efk efk.version="2">
+  <dialplan>
+	<dialplan.digitmap dialplan.digitmap.timeOut="3|3|3|3|3|3|3|3">
+    </dialplan.digitmap>
+  </dialplan> 
+  <dir>
+    <corp>
+    </corp>
+  </dir>
+  <exchange>
+    <server>
+    </server>
+  </exchange>
+  <efk efk.version="2">
     <efklist
       efk.efklist.1.mname="xfervm"
       efk.efklist.1.status="1"
@@ -47,7 +67,15 @@ $xml = new SimpleXMLElement(
   <feature>
     <directedCallPickup>
     </directedCallPickup>
+    <corporateDirectory>
+    </corporateDirectory>
+    <exchangeCalendar>
+    </exchangeCalendar>
   </feature>
+  <mb>
+    <main>
+    </main>
+  </mb>
   <msg>
     <mwi>
     </mwi>
@@ -56,14 +84,24 @@ $xml = new SimpleXMLElement(
     <keepalive>
     </keepalive>
   </nat>
+  <se>
+    <rt>
+    </rt>
+  </se>
   <softkey 
     softkey.1.label="Xfer VM"
     softkey.1.action="!xfervm"
-    softkey.1.enable="1" softkey.1.use.active="1" softkey.1.use.hold="1" softkey.1.precede="0"
+    softkey.1.use.active="1" softkey.1.use.hold="1" softkey.1.precede="0"
     softkey.2.label="Park Call"
     softkey.2.use.active="1" softkey.2.use.hold="1" softkey.2.precede="0"
-	softkey.3.label="" 
-	softkey.3.use.idle="1" softkey.3.insert="2">
+    softkey.3.label="Record"
+    softkey.3.use.active="1" softkey.3.use.hold="1" softkey.3.precede="0"
+    softkey.4.label=""
+    softkey.4.use.idle="1" softkey.4.insert="2">
+    <feature>
+      <basicCallManagement>
+      </basicCallManagement>
+    </feature>
   </softkey>  
   <tcpIpApp>
     <sntp>
@@ -74,6 +112,10 @@ $xml = new SimpleXMLElement(
     </backlight>
   </up>
   <voIpProt>
+    <SIP>
+      <alertInfo>
+      </alertInfo>
+    </SIP>
   </voIpProt>
 </polycomConfig>');
 
@@ -105,6 +147,7 @@ if($polycom_request)
 }
 
 $device = polycomphones_get_phones_edit($id);
+$alerts = polycomphones_get_alertinfo_list();
 $general = polycomphones_get_general_edit();
 $exchange_module = sql("SELECT id FROM modules WHERE modulename = 'exchangeum' AND enabled = '1'",'getOne');
 $parking_module = sql("SELECT id FROM modules WHERE modulename = 'parking' AND enabled = '1'",'getOne');
@@ -132,7 +175,12 @@ foreach($device['lines'] as $line)
 		$transports = explode(',', $details['transport']);		
 		
 		if($i==1)
+		{
 			$primary = $details['id'];
+			
+			srand($details['id']);
+			$xml->voIpProt->addAttribute("voIpProt.SIP.local.port", rand(1024, 65535));
+		}
 		
 		$xml->reg->addAttribute("reg.$i.displayName", $details['name']);
 		$xml->reg->addAttribute("reg.$i.address", $details['id']);
@@ -159,7 +207,7 @@ foreach($device['lines'] as $line)
 		$code = $fcc->getCodeActive();
 		unset($fcc);
 				
-		if(!empty($code))
+		if($code != '')
 			$xml->msg->mwi->addAttribute("msg.mwi.$i.callBack", $code);
 		
 	}
@@ -184,12 +232,6 @@ foreach($device['lines'] as $line)
 	}
 	else
 		continue;
-	
-	if($i==1)
-	{
-		srand($row['id']);
-		$xml->voIpProt->addAttribute("voIpProt.SIP.local.port", rand(1024, 65535));
-	}
 
 	$i++;
 }
@@ -204,8 +246,12 @@ foreach($device['attendants'] as $attendant)
 		$code = $fcc->getCodeActive();
 		unset($fcc);
 	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
-		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 'Call Forward');
+		if($code != '' && $primary != '')
+		{
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
+				!empty($attendant['label']) ? $attendant['label'] : 'Call Forward');
+		}
 	}
 	elseif($attendant['keyword'] == 'donotdisturb')
 	{
@@ -213,8 +259,12 @@ foreach($device['attendants'] as $attendant)
 		$code = $fcc->getCodeActive();
 		unset($fcc);
 	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
-		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 'DND');
+		if($code != '' && $primary != '')
+		{
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
+				!empty($attendant['label']) ? $attendant['label'] : 'DND');
+		}
 	}
 	elseif($attendant['keyword'] == 'followme')
 	{
@@ -222,8 +272,12 @@ foreach($device['attendants'] as $attendant)
 		$code = $fcc->getCodeActive();
 		unset($fcc);
 	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
-		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 'Follow Me');
+		if($code != '' && $primary != '')
+		{
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
+				!empty($attendant['label']) ? $attendant['label'] : 'Follow Me');
+		}
 	}
 	elseif($attendant['keyword'] == 'user')
 	{
@@ -251,21 +305,67 @@ foreach($device['attendants'] as $attendant)
 		$fcc = new featurecode('daynight', 'toggle-mode-' . $attendant['value']);
 		$code = $fcc->getCodeActive();
 		unset($fcc);
-			
-		$flowname = sql("SELECT dest FROM daynight 
-			WHERE dmode = 'fc_description' 
-			AND ext = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
+		
+		if($code != '')
+		{
+			$flowname = sql("SELECT dest FROM daynight 
+				WHERE dmode = 'fc_description' 
+				AND ext = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$general['address']);	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
-			!empty($attendant['label']) ? $attendant['label'] : ($flowname ? $flowname : $code));
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$general['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
+				!empty($attendant['label']) ? $attendant['label'] : ($flowname ? $flowname : $code));
+		}
+	}
+	elseif($attendant['keyword'] == 'timecondition')
+	{
+		$fcc = new featurecode('timeconditions', 'toggle-mode-' . $attendant['value']);
+		$code = $fcc->getCodeActive();
+		unset($fcc);
+		
+		if($code != '')
+		{
+			$timename = sql("SELECT displayname FROM timeconditions 
+				WHERE timeconditions_id = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
+
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$general['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
+				!empty($attendant['label']) ? $attendant['label'] : $timename);
+		}
 	}
 		
 	$i++;
 }
 
+// Alert Info
+$i=1;
+foreach($alerts as $alert)
+{
+	$child = $xml->se->rt->addChild($alert['id'], ' ');
+
+	$child->addAttribute("se.rt.".$alert['id'].".name", $alert['name']);
+	$child->addAttribute("se.rt.".$alert['id'].".callwait", $alert['callwait']);
+	$child->addAttribute("se.rt.".$alert['id'].".micmute", $alert['micmute']);
+	$child->addAttribute("se.rt.".$alert['id'].".ringer", $alert['ringer']);
+	$child->addAttribute("se.rt.".$alert['id'].".type", $alert['type']);
+	
+	if(!empty($alert['alertinfo']))
+	{
+		$xml->voIpProt->SIP->alertInfo->addAttribute("voIpProt.SIP.alertInfo.$i.class", $alert['id']);
+		$xml->voIpProt->SIP->alertInfo->addAttribute("voIpProt.SIP.alertInfo.$i.value", $alert['alertinfo']);
+		
+		$i++;
+	}
+}
+
 // General Settings
 $xml->apps->push->addAttribute("apps.push.password", $general['apps_push_password']);
+
+$digits = '';
+for($i=1; $i<$general['digits']; $i++)
+	$digits .= 'x';
+
+$xml->dialplan->addAttribute("dialplan.digitmap", "*x.T|**[1-9]".$digits."|[2-9]11|0T|011xxx.T|[0-1][2-9]xxxxxxxxx|[2-9]xxxxxxxxx|[1-9]".$digits."T");
 
 if(!empty($general['tcpIpApp_sntp_address']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address", $general['tcpIpApp_sntp_address']);
@@ -273,43 +373,131 @@ if(!empty($general['tcpIpApp_sntp_address']))
 if(!empty($general['tcpIpApp_sntp_gmtOffset']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset", $general['tcpIpApp_sntp_gmtOffset']);
 
+if(!empty($general['mb_main_home']))
+	$xml->mb->main->addAttribute("mb.main.home", $general['mb_main_home']);
+
+$xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
+$xml->up->addAttribute("up.useDirectoryNames", getvalue('up_useDirectoryNames', $device, $general));
 $xml->call->callWaiting->addAttribute("call.callWaiting.ring", getvalue('call_callWaiting_ring', $device, $general));
 $xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", getvalue('call_hold_localReminder_enabled', $device, $general));
 $xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", getvalue('feature_directedCallPickup_enabled', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.idleIntensity", getvalue('up_backlight_idleIntensity', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.onIntensity", getvalue('up_backlight_onIntensity', $device, $general));
 $xml->nat->keepalive->addAttribute("nat.keepalive.interval", getvalue('nat_keepalive_interval', $device, $general));
+$xml->apps->ucdesktop->addAttribute("apps.ucdesktop.adminEnabled", getvalue('apps_ucdesktop_adminEnabled', $device, $general));
 
+// Directed Call Pickup
+if(getvalue('feature_directedCallPickup_enabled', $device, $general) == '1')
+{
+	$xml->call->addAttribute("call.directedCallPickupMethod", "native");
+	$xml->call->addAttribute("call.directedCallPickupString", "");
+}
+else
+{
+	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.normal", "0");
+}
+
+// Corporate Settings
+if(!empty($general['dir_corp_address']))
+	$xml->dir->corp->addAttribute("dir.corp.address", $general['dir_corp_address']);
+
+if(!empty($general['dir_corp_port']))
+	$xml->dir->corp->addAttribute("dir.corp.port", $general['dir_corp_port']);
+
+if(!empty($general['dir_corp_baseDN']))
+	$xml->dir->corp->addAttribute("dir.corp.baseDN", $general['dir_corp_baseDN']);
+
+if(!empty($general['dir_corp_user']))
+	$xml->dir->corp->addAttribute("dir.corp.user", $general['dir_corp_user']);
+	
+if(!empty($general['dir_corp_password']))
+	$xml->dir->corp->addAttribute("dir.corp.password", $general['dir_corp_password']);
+
+if(!empty($general['exchange_server_url']))
+	$xml->exchange->server->addAttribute("exchange.server.url", $general['exchange_server_url']);
+
+$xml->feature->corporateDirectory->addAttribute("feature.corporateDirectory.enabled", getvalue('feature_corporateDirectory_enabled', $device, $general));
+$xml->feature->exchangeCalendar->addAttribute("feature.exchangeCalendar.enabled", getvalue('feature_exchangeCalendar_enabled', $device, $general));
+ 
 // Xfer VM Button
 $fcc = new featurecode('voicemail', 'directdialvoicemail');
 $code = $fcc->getCodeActive();
 unset($fcc);
-	
-$xml->efk->ekflist->addAttribute("efk.efklist.1.action.string", $code.'$P1N4$$Trefer$');
+
+if($code != '')
+{
+	$xml->efk->efklist->addAttribute("efk.efklist.1.action.string", $code.'$P1N4$$Trefer$');
+	$xml->softkey->addAttribute("softkey.1.enable", '1');
+}
+else
+	$xml->softkey->addAttribute("softkey.1.enable", '0');
 
 // Park Call Button
 if($parking_module)
 {
+	$fcc = new featurecode('core', 'blindxfer');
+	$code = $fcc->getCodeActive();
+	unset($fcc);
+
 	$parkext = sql("SELECT parkext FROM parkplus ORDER BY id LIMIT 1",'getOne');
 	
-	$xml->softkey->addAttribute("softkey.2.action", $parkext.'$Trefer$');
+	// Blind transfer feature code is preferred as using phone transfer will hang up call if slots are filled
+	if($code != '')
+		$xml->softkey->addAttribute("softkey.2.action", getdialpad($code).'$Cp1$'.$parkext.'$Tdtmf$$FDialpadPound$');
+	// VVX series does not send digits on # so use send call soft key
+	else if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
+		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.getdialpad($parkext).'$FSoftKey1$$Cp3$$Chu$');
+	// SoundPoint series will send digits on #
+	else
+		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.getdialpad($parkext).'$FDialpadPound$$Cp3$$Chu$');
+	
 	$xml->softkey->addAttribute("softkey.2.enable", '1');
 }
 else
 	$xml->softkey->addAttribute("softkey.2.enable", '0');
 
-// VVX DND Button
-if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
+// Record Call Button
+$fcc = new featurecode('core', 'automon');
+$code = $fcc->getCodeActive();
+unset($fcc);
+
+if($code != '')
+{
+	$xml->softkey->addAttribute("softkey.3.action", $code);
 	$xml->softkey->addAttribute("softkey.3.enable", '1');
+}
 else
 	$xml->softkey->addAttribute("softkey.3.enable", '0');
+	
+// VVX series move DND button to next page
+if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
+	$xml->softkey->addAttribute("softkey.4.enable", '1');
+else
+	$xml->softkey->addAttribute("softkey.4.enable", '0');
 
 function getvalue($id, $device, $global)
 {
-	if(!empty($device['settings'][$id]))
+	if(isset($device['settings'][$id]) && $device['settings'][$id] != '')
 		return $device['settings'][$id];
 	else
 		return $global[$id];
+}
+
+function getdialpad($num)
+{
+	$action = '';
+	
+	for($i=0; $i<strlen($num); $i++)
+	{
+		if($num[$i] == '*')
+			$action .= '$FDialpadStar$';
+		elseif($num[$i] == '#')
+			$action .= '$FDialpadPound$';
+		else
+			$action .= '$FDialpad'.$num[$i].'$';
+	}
+	
+	return $action;
 }
 
 header("Content-type: application/xml");

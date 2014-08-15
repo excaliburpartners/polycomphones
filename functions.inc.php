@@ -7,7 +7,7 @@ function polycomphones_configpageinit($pagename) {
 	
 	if (isset($_REQUEST['display']) && $_REQUEST['display'] == 'devices' && isset($_REQUEST['extdisplay'])) 
 	{			
-		$currentcomponent->addguifunc('polycomphones_configpageload');
+		$currentcomponent->addguifunc('polycomphones_configpageload', 8);
 	}
 }
 
@@ -143,17 +143,15 @@ function polycomphones_delete_phones_list($id)
 	sql("DELETE FROM polycom_device_settings WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_lines WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_line_settings WHERE id = '".$db->escapeSimple($id)."'");
+	sql("DELETE FROM polycom_device_attendants WHERE id = '".$db->escapeSimple($id)."'");
 }
 
 function polycomphones_get_phones_edit($id) 
 {
 	global $db;
 	
-	$results = sql("SELECT name, mac FROM polycom_devices
+	$device = sql("SELECT name, mac FROM polycom_devices
 		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
-	
-	$device['name'] = $results['name'];
-	$device['mac'] = $results['mac'];
 	
 	$lines = sql("SELECT lineid, deviceid, externalid FROM polycom_device_lines 
 		WHERE id = \"{$db->escapeSimple($id)}\"
@@ -219,8 +217,9 @@ function polycomphones_save_phones_edit($id, $device)
 			$entries[] = '\''.$db->escapeSimple($id).'\',\''.$db->escapeSimple($lineid).'\',\''.
 				$db->escapeSimple($key).'\',\''.$db->escapeSimple($val).'\'';
 
-		sql("INSERT INTO polycom_device_line_settings (id, lineid, keyword, value) 
-			VALUES (" . implode('),(', $entries) . ")");
+		if(count($entries) > 0)
+			sql("INSERT INTO polycom_device_line_settings (id, lineid, keyword, value) 
+				VALUES (" . implode('),(', $entries) . ")");
 	}
 	
 	sql("DELETE FROM polycom_device_attendants WHERE id = '".$db->escapeSimple($id)."'");
@@ -235,15 +234,85 @@ function polycomphones_save_phones_edit($id, $device)
 	foreach ($device['settings'] as $key => $val)
 		$entries[] = '\''.$db->escapeSimple($id).'\',\''.$db->escapeSimple($key).'\',\''.$db->escapeSimple($val).'\'';
 
-	sql("REPLACE INTO polycom_device_settings (id, keyword, value) 
-		VALUES (" . implode('),(', $entries) . ")");
+	if(count($entries) > 0)
+		sql("REPLACE INTO polycom_device_settings (id, keyword, value) 
+			VALUES (" . implode('),(', $entries) . ")");
+}
+
+function polycomphones_get_phones_directory($mac)
+{
+	global $amp_conf;
+	
+	$file = $amp_conf['AMPWEBROOT'] . '/admin/modules/_polycom_software/contacts/'.$mac.'-directory.xml';
+	
+	$directory = array();
+	
+	if(!file_exists($file))
+		return $directory;
+		
+	if(!$xml = simplexml_load_file($file))
+		return $directory;
+	
+	$fields = array(
+		'fn',
+		'ln',
+		'ct',
+		'sd',
+		'rt',
+		'bw',
+	);
+	
+	foreach($xml->item_list->children() as $child)
+	{
+		$contact = array();
+
+		foreach ($fields as $field)
+			$contact[$field] = (string)$child->$field;
+			
+		$directory[] = $contact;
+	}
+	
+	return $directory;
+}
+
+function polycomphones_save_phones_directory($mac, $directory)
+{
+	global $amp_conf;
+	
+	$file = $amp_conf['AMPWEBROOT'] . '/admin/modules/_polycom_software/contacts/'.$mac.'-directory.xml';
+	
+	$xml = new SimpleXMLElement(
+'<?xml version="1.0" standalone="yes"?>
+<directory>
+  <item_list>
+  </item_list>
+</directory>');
+
+	$fields = array(
+		'fn',
+		'ln',
+		'ct',
+		'sd',
+		'rt',
+		'bw',
+	);
+
+	foreach($directory as $contact)
+	{
+		$child = $xml->item_list->addChild(item);
+		
+		foreach($fields as $field)
+			$child->addChild($field, $contact[$field]);
+	}
+	
+	$xml->asXML($file);
 }
 
 function polycomphones_get_externallines_list() 
 {
 	global $db;
 	
-	$results = sql("SELECT id, name FROM polycom_externallines",'getAll',DB_FETCHMODE_ASSOC);
+	$results = sql("SELECT id, name FROM polycom_externallines ORDER BY name",'getAll',DB_FETCHMODE_ASSOC);
 		
 	return $results;
 }
@@ -260,19 +329,14 @@ function polycomphones_get_externallines_edit($id)
 {
 	global $db;
 	
-	$results = sql("SELECT name FROM polycom_externallines
+	$line = sql("SELECT name FROM polycom_externallines
+		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
+	
+	$settings = sql("SELECT keyword, value FROM polycom_externalline_settings
 		WHERE id = \"{$db->escapeSimple($id)}\"",'getAll',DB_FETCHMODE_ASSOC);
-	
-	if(count($results) > 0)
-	{
-		$line['name'] = $results[0]['name'];
-	
-		$settings = sql("SELECT keyword, value FROM polycom_externalline_settings
-			WHERE id = \"{$db->escapeSimple($id)}\"",'getAll',DB_FETCHMODE_ASSOC);
 
-		foreach($settings as $setting)
-			$line['settings'][$setting['keyword']]=$setting['value'];
-	}
+	foreach($settings as $setting)
+		$line['settings'][$setting['keyword']]=$setting['value'];
 		
 	return $line;
 }
@@ -295,12 +359,48 @@ function polycomphones_save_externallines_edit($id, $line)
 		sql("UPDATE polycom_externallines SET 
 			name = '".$db->escapeSimple($line['name'])."'
 		WHERE id = '".$db->escapeSimple($id)."'");
-	
+
+	$entries = array();
 	foreach ($line['settings'] as $key => $val)
 		$entries[] = '\''.$db->escapeSimple($id).'\',\''.$db->escapeSimple($key).'\',\''.$db->escapeSimple($val).'\'';
 
-	sql("REPLACE INTO polycom_externalline_settings (id, keyword, value) 
-		VALUES (" . implode('),(', $entries) . ")");
+	if(count($entries) > 0)
+		sql("REPLACE INTO polycom_externalline_settings (id, keyword, value) 
+			VALUES (" . implode('),(', $entries) . ")");
+}
+
+function polycomphones_get_alertinfo_list() 
+{
+	global $db;
+	
+	$results = sql("SELECT id, name, callwait, micmute, ringer, type, alertinfo 
+		FROM polycom_alertinfo",'getAll',DB_FETCHMODE_ASSOC);
+		
+	return $results;
+}
+
+function polycomphones_get_alertinfo_edit($id)
+{
+	global $db;
+	
+	$alert = sql("SELECT id, name, callwait, micmute, ringer, type, alertinfo FROM polycom_alertinfo
+		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
+
+	return $alert;
+}
+
+function polycomphones_save_alertinfo_edit($id, $alert)
+{
+	global $db;
+	
+	sql("UPDATE polycom_alertinfo SET 
+		name = '".$db->escapeSimple($alert['name'])."',
+		callwait = '".$db->escapeSimple($alert['callwait'])."',
+		micmute = '".$db->escapeSimple($alert['micmute'])."',
+		ringer = '".$db->escapeSimple($alert['ringer'])."',
+		type = '".$db->escapeSimple($alert['type'])."',
+		alertinfo = '".$db->escapeSimple($alert['alertinfo'])."'
+	WHERE id = '".$db->escapeSimple($id)."'");
 }
 
 function polycomphones_get_general_edit() 
@@ -319,6 +419,7 @@ function polycomphones_save_general_edit($settings)
 {
 	global $db;
 	
+	$entries = array();
 	foreach ($settings as $key => $val)
 		$entries[] = '\''.$db->escapeSimple($key).'\',\''.$db->escapeSimple($val).'\'';
 
@@ -346,7 +447,7 @@ function polycomphones_dropdown_lines($id)
 	foreach($results as $result)
 		if(!in_array($result['id'], $assigned))
 			$lines['freepbx_' . $result['id']]=$result['id'] . 
-				(!empty($result['extension']) ? ': '.$result['name'].' &lt;'.$result['extension'].'&gt;' : '');
+				(!empty($result['extension']) ? ': '.$result['name'].' <'.$result['extension'].'>' : '');
 	
 	if(count($lines) > 0)
 		$dropdown['FreePBX'] = $lines;
@@ -426,12 +527,28 @@ function polycomphones_dropdown_attendant()
 			$dropdown['Parking'] = $parking;	
 	}
 	
+	// Time Conditions
+	$timecondition_module = sql("SELECT id FROM modules WHERE modulename = 'timeconditions' AND enabled = '1'",'getOne');
+	
+	if($timecondition_module)
+	{
+		$results = sql("SELECT timeconditions_id, displayname FROM timeconditions 
+			WHERE generate_hint = '1' ORDER BY timeconditions_id",'getAll',DB_FETCHMODE_ASSOC);
+
+		$timecondition = array();
+		foreach($results as $result)
+			$timecondition['timecondition_' . $result['timeconditions_id']] = '<'.$result['timeconditions_id'].'> '.$result['displayname'];
+		
+		if(count($timecondition) > 0)
+			$dropdown['Time Conditions'] = $timecondition;	
+	}
+	
 	// Users
 	$results = sql("SELECT extension, name FROM users ORDER BY extension",'getAll',DB_FETCHMODE_ASSOC);
 	
 	$users = array();
 	foreach($results as $result)
-		$users['user_' . $result['extension']] = '&lt;'.$result['extension'].'&gt; '.$result['name'];
+		$users['user_' . $result['extension']] = '<'.$result['extension'].'> '.$result['name'];
 		
 	if(count($users) > 0)
 		$dropdown['Users'] = $users;
@@ -441,6 +558,23 @@ function polycomphones_dropdown_attendant()
 
 function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Default')
 {
+	$dropdowns['disabled_enabled'] = array(
+		'0' => 'Disabled',
+		'1' => 'Enabled',
+	);
+	
+	$dropdowns['digits'] = array(
+		'2' => '2',
+		'3' => '3',
+		'4' => '4',
+		'5' => '5',
+		'6' => '6',
+		'7' => '7',
+		'8' => '8',
+		'9' => '9',
+		'10' => '10'
+	);
+
 	$dropdowns['tcpIpApp_sntp_gmtOffset'] = array(
 		'-28800' => 'GMT -8:00 Pacific Time',
 		'-25200' => 'GMT -7:00 Mountain Time',
@@ -456,27 +590,22 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 	);
 	
 	$dropdowns['ringType'] = array(
-		'ringer1' => 'Silent Ring',
-		'ringer2' => 'Low Trill',
-		'ringer3' => 'Low Double Trill',
-		'ringer4' => 'Medium Trill',
-		'ringer5' => 'Medium Double Trill',
-		'ringer6' => 'High Trill',
-		'ringer7' => 'High Double Trill',
-		'ringer8' => 'Highest Trill',
-		'ringer9' => 'Highest Double Trill',
-		'ringer10' => 'Beeble',
-		'ringer11' => 'Triplet',
-		'ringer12' => 'Ringback-style',
-		'ringer13' => 'Low Trill Precedence',
-		'ringer14' => 'Ring Splash',
+		'ringer1' => '1 Silent Ring',
+		'ringer2' => '2 Low Trill',
+		'ringer3' => '3 Low Double Trill',
+		'ringer4' => '4 Medium Trill',
+		'ringer5' => '5 Medium Double Trill',
+		'ringer6' => '6 High Trill',
+		'ringer7' => '7 High Double Trill',
+		'ringer8' => '8 Highest Trill',
+		'ringer9' => '9 Highest Double Trill',
+		'ringer10' => '10 Beeble',
+		'ringer11' => '11 Triplet',
+		'ringer12' => '12 Ringback-style',
+		'ringer13' => '13 Low Trill Precedence',
+		'ringer14' => '14 Ring Splash',
 	);
-	
-	$dropdowns['missedCallTracking'] = array(
-		'0' => 'Disabled',
-		'1' => 'Enabled',
-	);
-	
+
 	$dropdowns['callBackMode'] = array(
 		'disabled' => 'Disabled',
 		'contact' => 'Contact',
@@ -488,16 +617,6 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 		'silent' => 'Silent',
 	);
 	
-	$dropdowns['call_hold_localReminder_enabled'] = array(
-		'0' => 'Disabled',
-		'1' => 'Enabled',
-	);
-	
-	$dropdowns['feature_directedCallPickup_enabled'] = array(
-		'0' => 'Disabled',
-		'1' => 'Enabled',
-	);
-
 	$dropdowns['up_backlight_idleIntensity'] = array(
 		'0' => 'Off',
 		'1' => 'Low',
@@ -530,6 +649,19 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 	$dropdowns['register'] = array(
 		'1' => 'Yes',
 		'0' => 'No',
+	);
+	
+	$dropdowns['alert_callwait'] = array(
+		'callWaiting' => 'Call Waiting',
+		'callWaitingLong' => 'Call Waiting Long',
+		'precedenceCallWaiting' => 'Precedence Call Waiting',
+	);
+	
+	$dropdowns['alert_type'] = array(
+		'ring' => 'Ring',
+		'visual' => 'Visual',
+		'answer' => 'Answer',
+		'ring-answer' => 'Ring Answer',
 	);
 	
 	return $default ? array(''=>$defaultvalue) + $dropdowns[$id] : $dropdowns[$id];

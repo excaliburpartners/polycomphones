@@ -58,6 +58,7 @@ foreach ($devices as $device) {
 	</td>
 	<td>
 		<img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" title="Click to edit phone" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_edit&edit=<?php echo $device['id']?>'">
+		<img src="images/user_edit.png" style="cursor:pointer; float:none;" alt="edit" title="Click to edit directory" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_directory&edit=<?php echo $device['mac']?>'">
 		<img src="images/trash.png" style="cursor:pointer; float:none;" alt="remove" title="Click to delete phone" onclick="if(confirm('Are you sure you want to delete this phone?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&delete=<?php echo $device['id']?>'">
 	</td>
 <?php

@@ -1,4 +1,4 @@
-<h2>External Lines <?php echo empty($_GET['edit']) ? 'Add' : 'Edit'; ?></h2>
+<h2><?php echo empty($_GET['edit']) ? 'Add' : 'Edit'; ?> External Line</h2>
 <hr />
 
 <form name="polycomphones_externallines_edit" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=externallines_edit&edit=<?php echo $_GET['edit'];?>">

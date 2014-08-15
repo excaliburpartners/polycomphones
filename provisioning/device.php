@@ -9,7 +9,7 @@ $config = <<<EOD
 <!-- For information on configuring Polycom VoIP phones please refer to the -->
 <!-- Configuration File Management white paper available from: -->
 <!-- http://www.polycom.com/common/documents/whitepapers/configuration_file_management_on_soundpoint_ip_phones.pdf -->
-<APPLICATION APP_FILE_PATH="sip.ld" CONFIG_FILES="exten{$_GET['mac']}.cfg, freepbx.cfg" MISC_FILES="" LOG_FILE_DIRECTORY="logs" OVERRIDES_DIRECTORY="" CONTACTS_DIRECTORY="directory" LICENSE_DIRECTORY="" />
+<APPLICATION APP_FILE_PATH="sip.ld" CONFIG_FILES="exten{$_GET['mac']}.cfg, freepbx.cfg" MISC_FILES="" LOG_FILE_DIRECTORY="logs" OVERRIDES_DIRECTORY="" CONTACTS_DIRECTORY="contacts" LICENSE_DIRECTORY="" />
 EOD;
 
 header("Content-type: application/xml");

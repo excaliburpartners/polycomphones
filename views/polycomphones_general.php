@@ -4,22 +4,30 @@
 <form name="polycomphones_general" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=general_edit">
 <table>		
 <tbody>
-	<tr><td colspan="2"><h5><?php echo _("Network Options")?><hr/></h5></td></tr>			
+	<tr><td colspan="2"><h5><?php echo _("Network Options")?><hr/></h5></td></tr>
 	<tr>
 		<td width="175"><?php echo _("Registration Address")?></td>
 		<td><?php echo form_input('address', $general['address']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Registration Port")?></td>
-		<td><?php echo form_input('port', $general['port']); ?></td>	
+		<td><?php echo _("Registration Port")?><span class="help">?<span style="display: none;">Example: 5060</span></span></td>
+		<td><?php echo form_input('port', $general['port'], 'size="10"'); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("NTP Server")?></td>
+		<td><?php echo _("Extension Length")?></td>
+		<td><?php echo form_dropdown('digits', polycomphones_dropdown('digits'), $general['digits']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("NTP Server")?><span class="help">?<span style="display: none;">Example: pool.ntp.org</span></span></td>
 		<td><?php echo form_input('tcpIpApp_sntp_address', $general['tcpIpApp_sntp_address']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Time Zone")?></td>
 		<td><?php echo form_dropdown('tcpIpApp_sntp_gmtOffset', polycomphones_dropdown('tcpIpApp_sntp_gmtOffset', true, ''), $general['tcpIpApp_sntp_gmtOffset']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("Applications Home URL")?></td>
+		<td><?php echo form_input('mb_main_home', $general['mb_main_home'], 'size="40"'); ?></td>	
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Line Default Options")?><hr/></h5></td></tr>			
 	<tr>
@@ -32,7 +40,7 @@
 	</tr>
 	<tr>
 		<td><?php echo _("Missed Call Tracking")?></td>
-		<td><?php echo form_dropdown('missedCallTracking', polycomphones_dropdown('missedCallTracking'), $general['missedCallTracking']); ?></td>	
+		<td><?php echo form_dropdown('missedCallTracking', polycomphones_dropdown('disabled_enabled'), $general['missedCallTracking']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("MWI Callback Mode")?></td>
@@ -40,16 +48,24 @@
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Phone Default Options")?><hr/></h5></td></tr>	
 	<tr>
+		<td><?php echo _("Redundant Soft Keys")?></td>
+		<td><?php echo form_dropdown('softkey_feature_basicCallManagement_redundant', polycomphones_dropdown('disabled_enabled'), $general['softkey_feature_basicCallManagement_redundant']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("Use Directory Names")?></td>
+		<td><?php echo form_dropdown('up_useDirectoryNames', polycomphones_dropdown('disabled_enabled'), $general['up_useDirectoryNames']); ?></td>	
+	</tr>
+	<tr>
 		<td><?php echo _("Call Waiting Ring")?></td>
 		<td><?php echo form_dropdown('call_callWaiting_ring', polycomphones_dropdown('call_callWaiting_ring'), $general['call_callWaiting_ring']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Call Hold Reminder")?></td>
-		<td><?php echo form_dropdown('call_hold_localReminder_enabled', polycomphones_dropdown('call_hold_localReminder_enabled'), $general['call_hold_localReminder_enabled']); ?></td>	
+		<td><?php echo form_dropdown('call_hold_localReminder_enabled', polycomphones_dropdown('disabled_enabled'), $general['call_hold_localReminder_enabled']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Directed Call Pickup")?></td>
-		<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('feature_directedCallPickup_enabled'), $general['feature_directedCallPickup_enabled']); ?></td>	
+		<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('disabled_enabled'), $general['feature_directedCallPickup_enabled']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Backlight Idle Intensity")?></td>
@@ -62,6 +78,10 @@
 	<tr>
 		<td><?php echo _("NAT Keepalive Interval")?></td>
 		<td><?php echo form_dropdown('nat_keepalive_interval', polycomphones_dropdown('nat_keepalive_interval'), $general['nat_keepalive_interval']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("UC Desktop Connector")?></td>
+		<td><?php echo form_dropdown('apps_ucdesktop_adminEnabled', polycomphones_dropdown('disabled_enabled'), $general['apps_ucdesktop_adminEnabled']); ?></td>	
 	</tr>
 </tbody>
 </table>

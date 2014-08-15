@@ -72,12 +72,17 @@ switch($_GET['polycomphones_form'])
 			}
 
 			$fields = array(
+				'softkey_feature_basicCallManagement_redundant',
+				'up_useDirectoryNames',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'feature_directedCallPickup_enabled',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
 				'nat_keepalive_interval',
+				'apps_ucdesktop_adminEnabled',
+				'feature_corporateDirectory_enabled',
+				'feature_exchangeCalendar_enabled',
 			);
 			
 			foreach ($fields as $field)
@@ -94,10 +99,7 @@ switch($_GET['polycomphones_form'])
 				polycomphones_checkconfig($_GET['edit']);
 			}
 			
-			if(isset($_POST['add_line']))
-				redirect_standard('polycomphones_form','edit');
-			else
-				redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');
+			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');
 		}
 		
 		$device = polycomphones_get_phones_edit($_GET['edit']);
@@ -112,8 +114,52 @@ switch($_GET['polycomphones_form'])
 		
 		foreach($device['attendants'] as $key=>$attendant)
 			$device['attendants'][$key]['attendant'] = $attendant['keyword'].'_'.$attendant['value'];
-
+			
 		require 'modules/polycomphones/views/polycomphones_phones_edit.php';
+		break;
+		
+	case 'phones_directory':
+		if(isset($_POST['action']) && $_POST['action'] == 'edit')
+		{		
+			$fields = array(
+				'fn',
+				'ln',
+				'ct',
+				'sd',
+				'rt',
+				'bw',
+			);
+			
+			foreach ($fields as $field)
+				foreach($_POST[$field] as $key=>$value)
+				{
+					$key++;
+					
+					if($field == 'sd')
+						$directory[$key][$field] = $value == '1' ? $key : '';
+					elseif($field =='rt' && $value == '')
+						$directory[$key][$field] = 'default';
+					else
+						$directory[$key][$field] = $value;
+				}
+		
+			polycomphones_save_phones_directory($_GET['edit'], $directory);
+			
+			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');	
+		}
+		
+		$directory = polycomphones_get_phones_directory($_GET['edit']);
+		
+		foreach($directory as $key => $contact)
+		{
+			if($contact['sd'] != '')
+				$directory[$key]['sd'] = '1';
+				
+			if($contact['rt'] == 'default')
+				$directory[$key]['rt'] = '';
+		}
+		
+		require 'modules/polycomphones/views/polycomphones_phones_directory.php';
 		break;
 		
 	case 'externallines_list':
@@ -153,6 +199,66 @@ switch($_GET['polycomphones_form'])
 		$line = polycomphones_get_externallines_edit($_GET['edit']);
 		require 'modules/polycomphones/views/polycomphones_externallines_edit.php';
 		break;
+	
+	case 'alertinfo_list':
+		$alerts = polycomphones_get_alertinfo_list();
+		require 'modules/polycomphones/views/polycomphones_alertinfo.php';
+		break;
+		
+	case 'alertinfo_edit';
+		if(isset($_POST['action']) && $_POST['action'] == 'edit')
+		{
+			$fields = array(
+				'name',
+				'callwait',
+				'micmute',
+				'ringer',
+				'type',
+				'alertinfo',
+			);
+			
+			foreach ($fields as $field)
+				$alert[$field] = $_POST[$field];
+		
+			polycomphones_save_alertinfo_edit($_GET['edit'], $alert);
+			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=alertinfo_list');
+		}
+		
+		$alert = polycomphones_get_alertinfo_edit($_GET['edit']);
+		require 'modules/polycomphones/views/polycomphones_alertinfo_edit.php';
+		break;
+	
+	case 'corporate_edit';
+		if(isset($_POST['action']) && $_POST['action'] == 'edit')
+		{
+			$fields = array(
+				'dir_corp_address',
+				'dir_corp_port',
+				'dir_corp_baseDN',
+				'dir_corp_user',
+				'dir_corp_password',
+				'exchange_server_url',
+				'feature_corporateDirectory_enabled',
+				'feature_exchangeCalendar_enabled',
+			);
+			
+			foreach ($fields as $field)
+				$settings[$field] = $_POST[$field];
+				
+			if($settings['dir_corp_password'] == '******')
+				unset($settings['dir_corp_password']);
+			
+			polycomphones_save_general_edit($settings);
+			redirect_standard('polycomphones_form');
+		}
+		
+		$general = polycomphones_get_general_edit();
+		
+		if(!empty($general['dir_corp_password']))
+			$general['dir_corp_password'] = '******';
+		
+		require 'modules/polycomphones/views/polycomphones_corporate.php';
+		break;
 		
 	case 'general_edit':
 		if(isset($_POST['action']) && $_POST['action'] == 'edit')
@@ -160,18 +266,23 @@ switch($_GET['polycomphones_form'])
 			$fields = array(
 				'address',
 				'port',
+				'digits',
 				'tcpIpApp_sntp_address',
 				'tcpIpApp_sntp_gmtOffset',
+				'mb_main_home',
 				'lineKeys',
 				'ringType',
 				'missedCallTracking',
 				'callBackMode',
+				'softkey_feature_basicCallManagement_redundant',
+				'up_useDirectoryNames',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'feature_directedCallPickup_enabled',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
 				'nat_keepalive_interval',
+				'apps_ucdesktop_adminEnabled',
 			);
 			
 			foreach ($fields as $field)
