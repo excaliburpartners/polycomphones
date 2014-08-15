@@ -2,7 +2,8 @@
 /* $Id */
 if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 
-function polycomphones_configpageinit($pagename) {
+function polycomphones_configpageinit($pagename)
+{
 	global $currentcomponent;
 	
 	if (isset($_REQUEST['display']) && $_REQUEST['display'] == 'devices' && isset($_REQUEST['extdisplay'])) 
@@ -11,7 +12,8 @@ function polycomphones_configpageinit($pagename) {
 	}
 }
 
-function polycomphones_configpageload($pagename) {
+function polycomphones_configpageload($pagename) 
+{
 	global $currentcomponent;
 	global $db;
 
@@ -28,7 +30,8 @@ function polycomphones_configpageload($pagename) {
 	}
 }
 
-function polycomphones_get_config($engine) {
+function polycomphones_get_config($engine) 
+{
     global $db;
     global $core_conf;
 
@@ -42,25 +45,54 @@ function polycomphones_get_config($engine) {
     }
 }
 
-function polycomphones_checkconfig($id = '')
+function polycomphones_array_escape($values)
+{
+	global $db;
+	
+	if($values == null)
+		return array();
+		
+	if(!is_array($values))
+		$values = array($values);
+
+	$escaped = array();
+	foreach($values as $value)
+		$escaped[] = $db->escapeSimple($value);
+
+	return $escaped;
+}
+
+function polycomphones_checkconfig($id = null)
 {
 	global $db, $astman;
-	
-	$results = sql("SELECT deviceid FROM `polycom_device_lines`
-		WHERE deviceid IS NOT NULL " . (!empty($id) ? "AND id = '".$db->escapeSimple($id)."'" : "") . "
-		ORDER BY lineid LIMIT 1",'getAll',DB_FETCHMODE_ASSOC);
+
+	$id = polycomphones_array_escape($id);
+
+	$results = sql("SELECT MIN(deviceid) AS deviceid FROM `polycom_device_lines`
+		WHERE deviceid IS NOT NULL " . (count($id) > 0 ? "AND id IN ('".implode("','", $id)."')" : "") . "
+		GROUP BY id",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $result)
 		$astman->send_request('Command', array('Command' => 'sip notify polycom-check-cfg '.$result['deviceid']));
 }
 
-function polycomphones_push_checkconfig($id)
+function polycomphones_push_checkconfig($id = null)
 {
 	global $db;
 	
-	$ip = sql("SELECT lastip FROM polycom_devices WHERE id = '".$db->escapeSimple($id)."'",'getOne');
+	$id = polycomphones_array_escape($id);
+	
+	$results = sql("SELECT id, lastip FROM polycom_devices
+		" . (count($id) > 0 ? "WHERE id IN ('".implode("','", $id)."')" : ""),'getAll',DB_FETCHMODE_ASSOC);
 
-	return polycomphones_push($ip, '<PolycomIPPhone><Data priority="Critical">Action:UpdateConfig</Data></PolycomIPPhone>');
+	$failed = array();
+	foreach($results as $result)
+	{
+		if(!polycomphones_push($result['lastip'], '<PolycomIPPhone><Data priority="Critical">Action:UpdateConfig</Data></PolycomIPPhone>'))
+			$failed[] = $result['id'];
+	}
+	
+	return count($failed) > 0 ? $failed : true;
 }
 
 function polycomphones_push($ip, $xml)
@@ -113,6 +145,13 @@ function polycomphones_multiple_check()
 		$nt->delete('polycomphones', 'multiple');
 		
 	unset($nt);
+}
+
+function polycomphones_lookup_mac($mac)
+{
+	global $db;
+	
+	return sql("SELECT id FROM polycom_devices WHERE mac = '" . $db->escapeSimple($mac) . "'",'getOne');
 }
 
 function polycomphones_get_phones_list() 
@@ -556,6 +595,15 @@ function polycomphones_dropdown_attendant()
 	return $dropdown;
 }
 
+function polycomphones_dropdown_numbers($start, $end, $interval = 1, $default = false, $defaultvalue = 'Use Default')
+{
+	$dropdown = array();
+	for($i=$start; $i<=$end; $i = $i+$interval)
+		$dropdown[$i] = $i;
+		
+	return $default ? array(''=>$defaultvalue) + $dropdown : $dropdown;
+}
+
 function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Default')
 {
 	$dropdowns['disabled_enabled'] = array(
@@ -563,30 +611,11 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 		'1' => 'Enabled',
 	);
 	
-	$dropdowns['digits'] = array(
-		'2' => '2',
-		'3' => '3',
-		'4' => '4',
-		'5' => '5',
-		'6' => '6',
-		'7' => '7',
-		'8' => '8',
-		'9' => '9',
-		'10' => '10'
-	);
-
 	$dropdowns['tcpIpApp_sntp_gmtOffset'] = array(
 		'-28800' => 'GMT -8:00 Pacific Time',
 		'-25200' => 'GMT -7:00 Mountain Time',
 		'-21600' => 'GMT -6:00 Central Time',
 		'-18000' => 'GMT -5:00 Eastern Time',
-	);
-
-	$dropdowns['lineKeys'] = array(
-		'1' => '1',
-		'2' => '2',
-		'3' => '3',
-		'4' => '4',
 	);
 	
 	$dropdowns['ringType'] = array(

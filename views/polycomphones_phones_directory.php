@@ -55,7 +55,6 @@ $(document).ready(function() {
 <form name="polycomphones_phones_directory" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=phones_directory&edit=<?php echo $_GET['edit'];?>">
 <table>		
 <tbody>
-	<tr><td><p>Note: Phone must be rebooted for directory changes to load</p></td></tr>
 	<tr>
 		<td>	
 		<table id="directory">
@@ -99,7 +98,7 @@ $(document).ready(function() {
 	</tr>
 </tbody>
 </table>
-<br />
+<p>Phone will be restarted to update directory</p>
 
 <input type="hidden" name="action" value="edit">
 <input type="submit" value="<?php echo _("Submit")?>">

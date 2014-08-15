@@ -18,13 +18,34 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('callBackMode', 'contact'),
 ('softkey_feature_basicCallManagement_redundant', '1'),
 ('up_useDirectoryNames', '1'),
+('call_transfer_blindPreferred', '0'),
 ('call_callWaiting_ring', 'beep'),
 ('call_hold_localReminder_enabled', '0'),
+('call_rejectBusyOnDnd', '1'),
 ('feature_directedCallPickup_enabled', '0'),
+('powerSaving_enable', '0'),
 ('up_backlight_idleIntensity', '1'),
 ('up_backlight_onIntensity', '3'),
 ('nat_keepalive_interval', '0'),
 ('apps_ucdesktop_adminEnabled', '0');";
+
+$sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
+('powerSaving_idleTimeout_officeHours', '480'),
+('powerSaving_idleTimeout_offHours', '1'),
+('powerSaving_officeHours_startHour_monday', '7'),
+('powerSaving_officeHours_startHour_tuesday', '7'),
+('powerSaving_officeHours_startHour_wednesday', '7'),
+('powerSaving_officeHours_startHour_thursday', '7'),
+('powerSaving_officeHours_startHour_friday', '7'),
+('powerSaving_officeHours_startHour_saturday', '7'),
+('powerSaving_officeHours_startHour_sunday', '7'),
+('powerSaving_officeHours_duration_monday', '12'),
+('powerSaving_officeHours_duration_tuesday', '12'),
+('powerSaving_officeHours_duration_wednesday', '12'),
+('powerSaving_officeHours_duration_thursday', '12'),
+('powerSaving_officeHours_duration_friday', '12'),
+('powerSaving_officeHours_duration_saturday', '0'),
+('powerSaving_officeHours_duration_sunday', '0');";
 
 $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('feature_corporateDirectory_enabled', '0'),

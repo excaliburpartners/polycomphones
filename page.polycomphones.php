@@ -1,6 +1,20 @@
 <?php /* $Id */
 if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 
+/*
+ * Copyright (C) 2013 Excalibur Partners, LLC (info@excalibur-partners.com)
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 include('views/rnav.php');
 echo '<div id="content">';
 
@@ -14,9 +28,16 @@ switch($_GET['polycomphones_form'])
 			redirect_standard('polycomphones_form');
 		}
 		
+		if(isset($_GET['pushcheck']))
+		{
+			if(($failed = polycomphones_push_checkconfig($_GET['edit'])) !== true)
+				polycomphones_checkconfig($failed);
+			
+			redirect_standard('polycomphones_form');
+		}
+		
 		if(isset($_GET['checkconfig']))
 		{
-			// Use SIP notify as all phones should have a SIP registration
 			polycomphones_checkconfig();
 			redirect_standard('polycomphones_form');
 		}
@@ -74,9 +95,12 @@ switch($_GET['polycomphones_form'])
 			$fields = array(
 				'softkey_feature_basicCallManagement_redundant',
 				'up_useDirectoryNames',
+				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
+				'call_rejectBusyOnDnd',
 				'feature_directedCallPickup_enabled',
+				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
 				'nat_keepalive_interval',
@@ -91,11 +115,11 @@ switch($_GET['polycomphones_form'])
 			polycomphones_save_phones_edit($_GET['edit'], $device);
 			polycomphones_multiple_check();
 			
-			// Push config sends HTTP requset to the IP address of the phone
+			// Push config sends HTTP request to the IP address of the phone
 			// Works for internal phones even when they don't have a SIP registration
-			if(!polycomphones_push_checkconfig($_GET['edit']))
+			if(polycomphones_push_checkconfig($_GET['edit']) !== true)
 			{
-				// Fallback to SIP notify which will work for external phones with a SIP registration
+				// Fallback to SIP notify which will work for external phones with a SIP registration	
 				polycomphones_checkconfig($_GET['edit']);
 			}
 			
@@ -144,6 +168,9 @@ switch($_GET['polycomphones_form'])
 				}
 		
 			polycomphones_save_phones_directory($_GET['edit'], $directory);
+			
+			// Use SIP notify to reboot phone
+			polycomphones_checkconfig(polycomphones_lookup_mac($_GET['edit']));
 			
 			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');	
 		}
@@ -276,13 +303,32 @@ switch($_GET['polycomphones_form'])
 				'callBackMode',
 				'softkey_feature_basicCallManagement_redundant',
 				'up_useDirectoryNames',
+				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
+				'call_rejectBusyOnDnd',
 				'feature_directedCallPickup_enabled',
+				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
 				'nat_keepalive_interval',
 				'apps_ucdesktop_adminEnabled',
+				'powerSaving_idleTimeout_officeHours',
+				'powerSaving_idleTimeout_offHours',
+				'powerSaving_officeHours_startHour_monday',
+				'powerSaving_officeHours_startHour_tuesday',
+				'powerSaving_officeHours_startHour_wednesday',
+				'powerSaving_officeHours_startHour_thursday',
+				'powerSaving_officeHours_startHour_friday',
+				'powerSaving_officeHours_startHour_saturday',
+				'powerSaving_officeHours_startHour_sunday',
+				'powerSaving_officeHours_duration_monday',
+				'powerSaving_officeHours_duration_tuesday',
+				'powerSaving_officeHours_duration_wednesday',
+				'powerSaving_officeHours_duration_thursday',
+				'powerSaving_officeHours_duration_friday',
+				'powerSaving_officeHours_duration_saturday',
+				'powerSaving_officeHours_duration_sunday',
 			);
 			
 			foreach ($fields as $field)

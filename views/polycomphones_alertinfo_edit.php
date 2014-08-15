@@ -1,4 +1,4 @@
-<h2>Alert Info Edit</h2>
+<h2>Edit Alert Info</h2>
 <hr />
 
 <form name="polycomphones_alertinfo_edit" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=alertinfo_edit&edit=<?php echo $_GET['edit'];?>">

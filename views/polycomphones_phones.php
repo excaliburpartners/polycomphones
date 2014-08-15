@@ -18,7 +18,8 @@ $(function(){
 
 <form name="polycomphones_phones" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=phones_list">
 <input type="button" value="Add phone" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_edit&edit=0'" />
-<input type="button" value="Recheck config" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&checkconfig'" />
+<input type="button" value="Update all" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&pushcheck'" />
+<input type="button" value="Reboot all" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&checkconfig'" />
 
 <p></p>
 

@@ -32,15 +32,17 @@ $xml = new SimpleXMLElement(
   <call>
     <missedCallTracking>
     </missedCallTracking>
-	<callWaiting>
-	</callWaiting>    
-	<hold>
+    <callWaiting>
+    </callWaiting>    
+    <hold>
       <localReminder>
       </localReminder>
     </hold>
+    <transfer>
+    </transfer>
   </call>
   <dialplan>
-	<dialplan.digitmap dialplan.digitmap.timeOut="3|3|3|3|3|3|3|3">
+    <dialplan.digitmap dialplan.digitmap.timeOut="3|3|3|3|3|3|3|3">
     </dialplan.digitmap>
   </dialplan> 
   <dir>
@@ -84,6 +86,16 @@ $xml = new SimpleXMLElement(
     <keepalive>
     </keepalive>
   </nat>
+  <powerSaving>
+    <idleTimeout>
+    </idleTimeout>
+    <officeHours>
+      <startHour>
+      </startHour>
+      <duration>
+      </duration>
+    </officeHours>
+  </powerSaving>
   <se>
     <rt>
     </rt>
@@ -119,9 +131,7 @@ $xml = new SimpleXMLElement(
   </voIpProt>
 </polycomConfig>');
 
-$id = sql("
-	SELECT id FROM polycom_devices
-	WHERE mac = '" . $db->escapeSimple($_GET['mac']) . "'",'getOne');
+$id = polycomphones_lookup_mac($_GET['mac']);
 
 $polycom_request = strpos($_SERVER['HTTP_USER_AGENT'], 'Polycom') !== false;
 
@@ -378,14 +388,34 @@ if(!empty($general['mb_main_home']))
 
 $xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
 $xml->up->addAttribute("up.useDirectoryNames", getvalue('up_useDirectoryNames', $device, $general));
+$xml->call->callWaiting->addAttribute("call.transfer.blindPreferred", getvalue('call_transfer_blindPreferred', $device, $general));
 $xml->call->callWaiting->addAttribute("call.callWaiting.ring", getvalue('call_callWaiting_ring', $device, $general));
 $xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", getvalue('call_hold_localReminder_enabled', $device, $general));
+$xml->call->addAttribute("call.rejectBusyOnDnd", getvalue('call_rejectBusyOnDnd', $device, $general));
 $xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", getvalue('feature_directedCallPickup_enabled', $device, $general));
+$xml->powerSaving->addAttribute("powerSaving.enable", getvalue('powerSaving_enable', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.idleIntensity", getvalue('up_backlight_idleIntensity', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.onIntensity", getvalue('up_backlight_onIntensity', $device, $general));
 $xml->nat->keepalive->addAttribute("nat.keepalive.interval", getvalue('nat_keepalive_interval', $device, $general));
 $xml->apps->ucdesktop->addAttribute("apps.ucdesktop.adminEnabled", getvalue('apps_ucdesktop_adminEnabled', $device, $general));
 
+$xml->powerSaving->idleTimeout->addAttribute("powerSaving.idleTimeout.officeHours", $general['powerSaving_idleTimeout_officeHours']);
+$xml->powerSaving->idleTimeout->addAttribute("powerSaving.idleTimeout.offHours", $general['powerSaving_idleTimeout_offHours']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.monday", $general['powerSaving_officeHours_startHour_monday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.tuesday", $general['powerSaving_officeHours_startHour_tuesday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.wednesday", $general['powerSaving_officeHours_startHour_wednesday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.thursday", $general['powerSaving_officeHours_startHour_thursday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.friday", $general['powerSaving_officeHours_startHour_friday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.saturday", $general['powerSaving_officeHours_startHour_saturday']);
+$xml->powerSaving->officeHours->startHour->addAttribute("powerSaving.officeHours.startHour.sunday", $general['powerSaving_officeHours_startHour_sunday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.monday", $general['powerSaving_officeHours_duration_monday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.tuesday", $general['powerSaving_officeHours_duration_tuesday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.wednesday", $general['powerSaving_officeHours_duration_wednesday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.thursday", $general['powerSaving_officeHours_duration_thursday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.friday", $general['powerSaving_officeHours_duration_friday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.saturday", $general['powerSaving_officeHours_duration_saturday']);
+$xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.sunday", $general['powerSaving_officeHours_duration_sunday']);
+				
 // Directed Call Pickup
 if(getvalue('feature_directedCallPickup_enabled', $device, $general) == '1')
 {

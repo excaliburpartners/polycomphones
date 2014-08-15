@@ -6,16 +6,16 @@
 <tbody>
 	<tr><td colspan="2"><h5><?php echo _("Network Options")?><hr/></h5></td></tr>
 	<tr>
-		<td width="175"><?php echo _("Registration Address")?></td>
+		<td width="175"><?php echo _("Registration Address")?>*</td>
 		<td><?php echo form_input('address', $general['address']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Registration Port")?><span class="help">?<span style="display: none;">Example: 5060</span></span></td>
+		<td><?php echo _("Registration Port")?>*<span class="help">?<span style="display: none;">Example: 5060</span></span></td>
 		<td><?php echo form_input('port', $general['port'], 'size="10"'); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Extension Length")?></td>
-		<td><?php echo form_dropdown('digits', polycomphones_dropdown('digits'), $general['digits']); ?></td>	
+		<td><?php echo _("Extension Length")?>*</td>
+		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("NTP Server")?><span class="help">?<span style="display: none;">Example: pool.ntp.org</span></span></td>
@@ -32,56 +32,113 @@
 	<tr><td colspan="2"><h5><?php echo _("Line Default Options")?><hr/></h5></td></tr>			
 	<tr>
 		<td><?php echo _("Line Keys")?></td>
-		<td><?php echo form_dropdown('lineKeys', polycomphones_dropdown('lineKeys'), $general['lineKeys']); ?></td>	
+		<td><?php echo form_dropdown('lineKeys', polycomphones_dropdown_numbers(1, 4), $general['lineKeys']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Ring Type")?></td>
 		<td><?php echo form_dropdown('ringType', polycomphones_dropdown('ringType'), $general['ringType']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Missed Call Tracking")?></td>
+		<td><?php echo _("Missed Call Tracking")?>*</td>
 		<td><?php echo form_dropdown('missedCallTracking', polycomphones_dropdown('disabled_enabled'), $general['missedCallTracking']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("MWI Callback Mode")?></td>
+		<td><?php echo _("MWI Callback Mode")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
 		<td><?php echo form_dropdown('callBackMode', polycomphones_dropdown('callBackMode'), $general['callBackMode']); ?></td>	
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Phone Default Options")?><hr/></h5></td></tr>	
+	<?php 
+	$phone_options = $general;
+	$phone_default = false;
+	require 'modules/polycomphones/views/polycomphones_phone_options.php'; 
+	?>
+	<tr><td colspan="2"><h5><?php echo _("Power Saving Options")?><hr/></h5></td></tr>
+
 	<tr>
-		<td><?php echo _("Redundant Soft Keys")?></td>
-		<td><?php echo form_dropdown('softkey_feature_basicCallManagement_redundant', polycomphones_dropdown('disabled_enabled'), $general['softkey_feature_basicCallManagement_redundant']); ?></td>	
+	<td colspan="2">
+	
+	<table>
+	<tr>
+	<td valign="top">
+	
+	<table>
+		<tr>
+			<td><?php echo _("Idle Timeout Office Hours")?><span class="help">?<span style="display: none;">The number of minutes to wait while the phone is idle during office hours before activating power saving.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_idleTimeout_officeHours', polycomphones_dropdown_numbers(30, 600, 30, '1', '1'), $general['powerSaving_idleTimeout_officeHours']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Monday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_monday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_monday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Tuesday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_tuesday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_tuesday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Wednesday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_wednesday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_wednesday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Thursday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_thursday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_thursday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Friday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_friday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_friday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Saturday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_saturday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_saturday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Day Start Sunday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_startHour_sunday', polycomphones_dropdown_numbers(0, 23), $general['powerSaving_officeHours_startHour_sunday']); ?></td>	
+		</tr>
+	</table>
+
+	</td>
+	<td valign="top" style="padding-left: 20px">
+	
+	<table>
+		<tr>
+			<td><?php echo _("Idle Timeout Off Hours")?><span class="help">?<span style="display: none;">The number of minutes to wait while the phone is idle during off hours before activating power saving.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_idleTimeout_offHours', polycomphones_dropdown_numbers(1, 10), $general['powerSaving_idleTimeout_offHours']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Monday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_monday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_monday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Tuesday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_tuesday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_tuesday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Wednesday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_wednesday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_wednesday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Thursday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_thursday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_thursday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Friday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_friday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_friday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Saturday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_saturday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_saturday']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Duration Sunday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_sunday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_sunday']); ?></td>	
+		</tr>
+	</table>
+	
+	</td>
 	</tr>
-	<tr>
-		<td><?php echo _("Use Directory Names")?></td>
-		<td><?php echo form_dropdown('up_useDirectoryNames', polycomphones_dropdown('disabled_enabled'), $general['up_useDirectoryNames']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Call Waiting Ring")?></td>
-		<td><?php echo form_dropdown('call_callWaiting_ring', polycomphones_dropdown('call_callWaiting_ring'), $general['call_callWaiting_ring']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Call Hold Reminder")?></td>
-		<td><?php echo form_dropdown('call_hold_localReminder_enabled', polycomphones_dropdown('disabled_enabled'), $general['call_hold_localReminder_enabled']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Directed Call Pickup")?></td>
-		<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('disabled_enabled'), $general['feature_directedCallPickup_enabled']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Backlight Idle Intensity")?></td>
-		<td><?php echo form_dropdown('up_backlight_idleIntensity', polycomphones_dropdown('up_backlight_idleIntensity'), $general['up_backlight_idleIntensity']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Backlight On Intensity")?></td>
-		<td><?php echo form_dropdown('up_backlight_onIntensity', polycomphones_dropdown('up_backlight_onIntensity'), $general['up_backlight_onIntensity']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("NAT Keepalive Interval")?></td>
-		<td><?php echo form_dropdown('nat_keepalive_interval', polycomphones_dropdown('nat_keepalive_interval'), $general['nat_keepalive_interval']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("UC Desktop Connector")?></td>
-		<td><?php echo form_dropdown('apps_ucdesktop_adminEnabled', polycomphones_dropdown('disabled_enabled'), $general['apps_ucdesktop_adminEnabled']); ?></td>	
+	</table>
+	
+	</td>
 	</tr>
 </tbody>
 </table>

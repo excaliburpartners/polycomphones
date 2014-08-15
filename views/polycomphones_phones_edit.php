@@ -10,7 +10,7 @@
 		<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 		<td class="index"></td>
 		<td>'.form_dropdown('line[]', '', '', 'id="newline"').'</td>
-		<td>'.form_dropdown('lineKeys[]', polycomphones_dropdown('lineKeys', true), '').'</td>	
+		<td>'.form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, true), '').'</td>	
 		<td>'.form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), '').'</td>	
 		<td>'.form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), '').'</td>
 		<td>'.form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), '').'</td>	
@@ -124,7 +124,7 @@ $(document).ready(function() {
 				<td><?php echo _("Line Keys")?></td>
 				<td><?php echo _("Ring Type")?></td>
 				<td><?php echo _("Missed Call")?>*</td>
-				<td><?php echo _("MWI Callback")?></td>
+				<td><?php echo _("MWI Callback")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
 				<td>&nbsp;</td>
 			</tr>
 		</thead>
@@ -137,7 +137,7 @@ $(document).ready(function() {
 				<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 				<td class="index"><?php echo $i;?></td>
 				<td><?php echo form_dropdown('line[]', $dropdown_lines, $line['line']); ?></td>
-				<td><?php echo form_dropdown('lineKeys[]', polycomphones_dropdown('lineKeys', true), $line['settings']['lineKeys']); ?></td>	
+				<td><?php echo form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, true), $line['settings']['lineKeys']); ?></td>	
 				<td><?php echo form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), $line['settings']['ringType']); ?></td>	
 				<td><?php echo form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), $line['settings']['missedCallTracking']); ?></td>
 				<td><?php echo form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), $line['settings']['callBackMode']); ?></td>	
@@ -187,42 +187,11 @@ $(document).ready(function() {
 		</td>
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Phone Options")?><hr/></h5></td></tr>
-	<tr>
-		<td><?php echo _("Redundant Soft Keys")?></td>
-		<td><?php echo form_dropdown('softkey_feature_basicCallManagement_redundant', polycomphones_dropdown('disabled_enabled', true), $device['settings']['softkey_feature_basicCallManagement_redundant']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Use Directory Names")?>*</td>
-		<td><?php echo form_dropdown('up_useDirectoryNames', polycomphones_dropdown('disabled_enabled', true), $$device['settings']['up_useDirectoryNames']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Call Waiting Ring")?>*</td>
-		<td><?php echo form_dropdown('call_callWaiting_ring', polycomphones_dropdown('call_callWaiting_ring', true), $device['settings']['call_callWaiting_ring']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Call Hold Reminder")?>*</td>
-		<td><?php echo form_dropdown('call_hold_localReminder_enabled', polycomphones_dropdown('disabled_enabled', true), $device['settings']['call_hold_localReminder_enabled']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Directed Call Pickup")?>*</td>
-		<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('disabled_enabled', true), $device['settings']['feature_directedCallPickup_enabled']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Backlight Idle Intensity")?></td>
-		<td><?php echo form_dropdown('up_backlight_idleIntensity', polycomphones_dropdown('up_backlight_idleIntensity', true), $device['settings']['up_backlight_idleIntensity']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Backlight On Intensity")?></td>
-		<td><?php echo form_dropdown('up_backlight_onIntensity', polycomphones_dropdown('up_backlight_onIntensity', true), $device['settings']['up_backlight_onIntensity']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("NAT Keepalive Interval")?></td>
-		<td><?php echo form_dropdown('nat_keepalive_interval', polycomphones_dropdown('nat_keepalive_interval', true),  $device['settings']['nat_keepalive_interval']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("UC Desktop Connector")?>*</td>
-		<td><?php echo form_dropdown('apps_ucdesktop_adminEnabled', polycomphones_dropdown('disabled_enabled', true), $device['settings']['apps_ucdesktop_adminEnabled']); ?></td>	
-	</tr>
+	<?php 
+	$phone_options = $device['settings'];
+	$phone_default = true;
+	require 'modules/polycomphones/views/polycomphones_phone_options.php'; 
+	?>
 	<tr><td colspan="2"><h5><?php echo _("Corporate Options")?><hr/></h5></td></tr>	
 	<tr>
 		<td><?php echo _("Corporate Directory")?></td>
@@ -235,6 +204,7 @@ $(document).ready(function() {
 </tbody>
 </table>
 <p>* Changing these fields will cause phone to restart</p>
+
 <input type="hidden" name="action" value="edit">
 <input type="submit" value="<?php echo _("Submit")?>">
 </form>
