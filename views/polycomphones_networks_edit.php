@@ -24,7 +24,8 @@ $(function(){
 
 <form name="polycomphones_networks_edit" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=networks_edit&edit=<?php echo $_GET['edit'];?>">
 <table>
-<tbody>		
+<tbody>	
+	<tr><td colspan="2"><h5><?php echo _("Network")?><hr/></h5></td></tr>	
 	<tr>
 		<td width="175"><?php echo _("Name")?></td>
 		<td><?php echo form_input('name', $network['name']); ?></td>
@@ -42,6 +43,24 @@ $(function(){
 		</td>
 		<?php } ?>
 	</tr>
+	<tr><td colspan="2"><h5><?php echo _("Provisioning")?><hr/></h5></td></tr>
+	<tr>
+		<td width="175"><?php echo _("Require SSL")?><span class="help">?<span style="display: none;">If 'Enabled', an HTTPS url must be used for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: https://voip.domain.com/polycom/</span></span></td>
+		<td><?php echo form_dropdown('prov_ssl', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_ssl']); ?></td>
+	</tr>
+	<tr>
+		<td width="175"><?php echo _("Username")?><span class="help">?<span style="display: none;">If a username is provided authentication will be required for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: http://username:password@voip.domain.com/polycom/<br />Default: PlcmSpIp</span></span></td>
+		<td><?php echo form_input('prov_username', $network['settings']['prov_username']); ?></td>
+	</tr>
+	<tr>
+		<td width="175"><?php echo _("Password")?><span class="help">?<span style="display: none;">Password to use in combination with the username.<br />Default: PlcmSpIp</span></span></td>
+		<td><?php echo form_input('prov_password', $network['settings']['prov_password']); ?></td>
+	</tr>
+	<tr>
+		<td width="175"><?php echo _("Allow Uploads")?><span class="help">?<span style="display: none;">If 'Enabled', the phone will be allowed to upload logs and the contact directory.</span></span></td>
+		<td><?php echo form_dropdown('prov_uploads', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_uploads']); ?></td>
+	</tr>
+	<tr><td colspan="2"><h5><?php echo _("Options")?><hr/></h5></td></tr>	
 	<tr>
 		<td width="175"><?php echo _("Registration Address")?>*<span class="help">?<span style="display: none;">FreePBX server IP or hostname. Example: voip.domain.com</span></span></td>
 		<td><?php echo form_input('address', $network['settings']['address']); ?></td>

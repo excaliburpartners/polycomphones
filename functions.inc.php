@@ -530,6 +530,40 @@ function polycomphones_get_networks_ip($ip)
 			return polycomphones_get_networks_edit($result['id']);
 }
 
+function polycomphones_check_network($network)
+{
+	if($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
+	{
+		header('HTTP/1.0 403 Forbidden');
+		polycomphones_send_error('403 Forbidden', 'SSL is required to view this page.');
+	}
+	
+	if(empty($network['settings']['prov_username']))
+		return;
+
+	if (!isset($_SERVER['PHP_AUTH_USER']) || !(
+		$network['settings']['prov_username'] == $_SERVER['PHP_AUTH_USER'] &&
+		$network['settings']['prov_password'] == $_SERVER['PHP_AUTH_PW']))
+	{
+		header('WWW-Authenticate: Basic realm="Authentication Required"');
+		header('HTTP/1.0 401 Unauthorized');
+		polycomphones_send_error('401 Unathorized', 'Authentication is required to view this page.');
+	}
+}
+
+function polycomphones_send_error($title, $message)
+{
+	echo '
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>' . $title . '</title>
+</head><body>
+<h1>' . $title . '</h1>
+<p>' . $message . '</p>
+</body></html>';
+	exit;
+}
+
 function polycomphones_get_general_edit() 
 {
 	global $db;

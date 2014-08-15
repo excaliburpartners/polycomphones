@@ -9,6 +9,9 @@ if (!@include_once(getenv('FREEPBX_CONF') ? getenv('FREEPBX_CONF') : '/etc/freep
     include_once('/etc/asterisk/freepbx.conf');
 }
 
+$network = polycomphones_get_networks_ip($_SERVER['REMOTE_ADDR']);
+polycomphones_check_network($network);
+
 $xml = new SimpleXMLElement(
 '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- Per-phone Configuration File -->
@@ -164,7 +167,6 @@ if($polycom_request)
 
 $device = polycomphones_get_phones_edit($id);
 $alerts = polycomphones_get_alertinfo_list();
-$network = polycomphones_get_networks_ip($_SERVER['REMOTE_ADDR']);
 $general = polycomphones_get_general_edit();
 $exchange_module = sql("SELECT id FROM modules WHERE modulename = 'exchangeum' AND enabled = '1'",'getOne');
 $parking_module = sql("SELECT id FROM modules WHERE modulename = 'parking' AND enabled = '1'",'getOne');

@@ -275,6 +275,10 @@ switch($_GET['polycomphones_form'])
 			$network['cidr'] = $_POST['cidr'];
 			
 			$fields = array(
+				'prov_ssl',
+				'prov_username',
+				'prov_password',
+				'prov_uploads',
 				'address',
 				'port',
 				'tcpIpApp_sntp_address',
