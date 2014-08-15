@@ -22,16 +22,19 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('call_callWaiting_ring', 'beep'),
 ('call_hold_localReminder_enabled', '0'),
 ('call_rejectBusyOnDnd', '1'),
-('se_pat_misc_messageWaiting_inst', '1'),
-('up_headsetMode', '0'),
-('up_analogHeadsetOption', '0'),
 ('up_useDirectoryNames', '1'),
 ('dir_local_readonly', '0'),
+('se_pat_misc_messageWaiting_inst', '1'),
+('apps_ucdesktop_adminEnabled', '0'), 
+('attendant_ringType', 'ringer1'),
 ('feature_directedCallPickup_enabled', '0'),
+('attendant_spontaneousCallAppearances_normal', '1'),
+('attendant_spontaneousCallAppearances_automata', '0'),
+('up_headsetMode', '0'),
+('up_analogHeadsetOption', '0'),
 ('powerSaving_enable', '0'),
 ('up_backlight_idleIntensity', '1'),
-('up_backlight_onIntensity', '3'),
-('apps_ucdesktop_adminEnabled', '0');";
+('up_backlight_onIntensity', '3');";
 
 $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('powerSaving_idleTimeout_officeHours', '480'),
@@ -136,6 +139,7 @@ $sql[]='CREATE TABLE IF NOT EXISTS `polycom_device_attendants` (
   `keyword` varchar(30) NOT NULL,
   `value` varchar(30) NOT NULL,
   `label` varchar(30) NOT NULL,
+  `type` varchar(10) NOT NULL,
   PRIMARY KEY (`id`,`attendantid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;';
 
@@ -197,6 +201,22 @@ foreach ($sql as $statement){
 	$check = $db->query($statement);
 	if (DB::IsError($check)){
 		die_freepbx( "Can not execute $statement : " . $check->getMessage() .  "\n");
+	}
+}
+
+// Add type column to attendant table
+$sql = "SELECT type FROM polycom_device_attendants";
+$check = $db->getRow($sql, DB_FETCHMODE_ASSOC);
+if(DB::IsError($check)) {
+	$sql = array();
+    $sql[] = "ALTER TABLE `polycom_device_attendants` ADD `type` varchar(10) NOT NULL;";
+	$sql[] = "UPDATE polycom_device_attendants SET type = 'normal';";
+	
+	foreach ($sql as $statement){
+		$check = $db->query($statement);
+		if (DB::IsError($check)){
+			die_freepbx( "Can not execute $statement : " . $check->getMessage() .  "\n");
+		}
 	}
 }
 

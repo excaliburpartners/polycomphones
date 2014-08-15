@@ -37,7 +37,7 @@ $(document).ready(function() {
 		tableIndex($("#directory"));
 	});
 
-	$("#directory").delegate(".deletecontact", "click", function() {
+	$("#directory").on("click", ".deletecontact", function() {
 		var td = $(this).parent();
 		var tr = td.parent();
 		var table = tr.parent();

@@ -276,7 +276,7 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'Call Forward');
 		}
@@ -289,7 +289,7 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'DND');
 		}
@@ -302,7 +302,7 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code . $primary);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'Follow Me');
 		}
@@ -310,6 +310,7 @@ foreach($device['attendants'] as $attendant)
 	elseif($attendant['keyword'] == 'user')
 	{
 		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.type", $attendant['type']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : $attendant['value']);
 	}
@@ -420,6 +421,7 @@ $xml->up->addAttribute("up.analogHeadsetOption", polycomphones_getvalue('up_anal
 $xml->up->addAttribute("up.useDirectoryNames", polycomphones_getvalue('up_useDirectoryNames', $device, $general));
 $xml->dir->local->addAttribute("dir.local.readonly", polycomphones_getvalue('dir_local_readonly', $device, $general));
 $xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", polycomphones_getvalue('feature_directedCallPickup_enabled', $device, $general));
+$xml->attendant->ringType->addAttribute("attendant.ringType", polycomphones_getvalue('attendant_ringType', $device, $general));
 $xml->powerSaving->addAttribute("powerSaving.enable", polycomphones_getvalue('powerSaving_enable', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.idleIntensity", polycomphones_getvalue('up_backlight_idleIntensity', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.onIntensity", polycomphones_getvalue('up_backlight_onIntensity', $device, $general));
@@ -447,10 +449,13 @@ if(polycomphones_getvalue('feature_directedCallPickup_enabled', $device, $genera
 {
 	$xml->call->addAttribute("call.directedCallPickupMethod", "native");
 	$xml->call->addAttribute("call.directedCallPickupString", "");
+	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.normal", polycomphones_getvalue('attendant_spontaneousCallAppearances_normal', $device, $general));
+	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.automata", polycomphones_getvalue('attendant_spontaneousCallAppearances_automata', $device, $general));
 }
 else
 {
 	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.normal", "0");
+	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.automata", "0");
 }
 
 // MWI Audible Alert

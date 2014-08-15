@@ -105,6 +105,7 @@ switch($_GET['polycomphones_form'])
 				}
 				
 				$device['attendants'][$key]['label'] = $_POST['label'][$key-1];
+				$device['attendants'][$key]['type'] = $_POST['type'][$key-1];
 			}
 
 			$fields = array(
@@ -113,16 +114,19 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
-				'se_pat_misc_messageWaiting_inst',
-				'up_headsetMode',
-				'up_analogHeadsetOption',
 				'up_useDirectoryNames',
 				'dir_local_readonly',
+				'se_pat_misc_messageWaiting_inst',
+				'apps_ucdesktop_adminEnabled',
+				'up_headsetMode',
+				'up_analogHeadsetOption',
+				'attendant_ringType',
 				'feature_directedCallPickup_enabled',
+				'attendant_spontaneousCallAppearances_normal',
+				'attendant_spontaneousCallAppearances_automata',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
-				'apps_ucdesktop_adminEnabled',
 				'feature_corporateDirectory_enabled',
 				'feature_exchangeCalendar_enabled',
 			);
@@ -363,16 +367,19 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
-				'se_pat_misc_messageWaiting_inst',
-				'up_headsetMode',
-				'up_analogHeadsetOption',
 				'up_useDirectoryNames',
 				'dir_local_readonly',
+				'se_pat_misc_messageWaiting_inst',
+				'apps_ucdesktop_adminEnabled',
+				'up_headsetMode',
+				'up_analogHeadsetOption',
+				'attendant_ringType',
 				'feature_directedCallPickup_enabled',
+				'attendant_spontaneousCallAppearances_normal',
+				'attendant_spontaneousCallAppearances_automata',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
-				'apps_ucdesktop_adminEnabled',
 				'powerSaving_idleTimeout_officeHours',
 				'powerSaving_idleTimeout_offHours',
 				'powerSaving_officeHours_startHour_monday',

@@ -23,6 +23,7 @@
 		<td class="index"></td>
 		<td>'.form_dropdown('attendant[]', '', '', 'id="newattendant"').'</td>
 		<td>'.form_input('label[]', '', 'maxlength="30"').'</td>	
+		<td class="type">'.form_dropdown('type[]', polycomphones_dropdown('attendantType'), '', 'style="display: none"').'</td>
 		<td><img src="images/trash.png" class="deleteattendant" style="cursor:pointer; float:none;" alt="remove" title="Click to delete attendent"></td>
 	</tr>';
 ?>
@@ -83,7 +84,7 @@ $(document).ready(function() {
 		tableIndex($("#lines"));
 	});
 
-	$("#lines").delegate(".deleteline", "click", function() {
+	$("#lines").on("click", ".deleteline", function() {
 		var td = $(this).parent();
 		var tr = td.parent();
 		var table = tr.parent();
@@ -103,7 +104,7 @@ $(document).ready(function() {
 		tableIndex($("#attendants"));
 	});
 
-	$("#attendants").delegate(".deleteattendant", "click", function() {
+	$("#attendants").on("click", ".deleteattendant", function() {
 		var td = $(this).parent();
 		var tr = td.parent();
 		var table = tr.parent();
@@ -115,6 +116,17 @@ $(document).ready(function() {
 		handle: ".sort",
 		stop: updateIndex
 	});
+	
+	 $("#attendants").on("change", 'select[name="attendant[]"]', function() {
+	 	var td = $(this).parent();
+		var tr = td.parent();
+		if($(this).val().startsWith('user_')) {
+			$('td.type select', tr).css("display", "");
+		} else {
+			$('td.type select', tr).css("display", "none");
+			$('td.type select', tr).val('');
+		}
+	 });
 });
 </script>
 
@@ -149,7 +161,8 @@ if(!empty($_GET['edit'])) {
 			</a></span>
 		</td>	
 		<?php } ?>
-	</tr>	
+	</tr>
+	
 	<tr><td colspan="3"><h5><?php echo _("Lines")?><hr/></h5></td></tr>	
 	<tr>
 		<td colspan="2">	
@@ -190,6 +203,7 @@ if(!empty($_GET['edit'])) {
 		<input type="button" class="addline" value="<?php echo _("Add Line")?>"/>
 		</td>
 	</tr>
+	
 	<tr><td colspan="3"><h5><?php echo _("Attendant Console")?><hr/></h5></td></tr>	
 	<tr>
 		<td colspan="2">	
@@ -199,7 +213,8 @@ if(!empty($_GET['edit'])) {
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td><?php echo _("Attendant")?>*</td>
-				<td><?php echo _("Custom Label")?>*</td>
+				<td><?php echo _("Custom Label")?>*<span class="help">?<span style="display: none;">The text label displays adjacent to the associated line key.</span></span></td>
+				<td><?php echo _("Type")?><span class="help">?<span style="display: none;">If 'Normal', the default action is to initiate a call if the user is idle or busy and to perform a directed call pickup if the user is ringing. Any active calls are first placed on hold.<br />If 'Automata', the default action when is to perform a park/blind transfer of any currently active call. If there is no active call and the monitored user is ringing/busy, an attempt to perform a directed call pickup/park retrieval is made</span></span></td>
 				<td>&nbsp;</td>
 			</tr>
 		</thead>
@@ -212,7 +227,8 @@ if(!empty($_GET['edit'])) {
 				<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 				<td class="index"><?php echo $i;?></td>
 				<td><?php echo form_dropdown('attendant[]', $dropdown_attendant, $attendant['attendant']); ?></td>
-				<td><?php echo form_input('label[]', $attendant['label'], 'maxlength="30"'); ?></td>	
+				<td><?php echo form_input('label[]', $attendant['label'], 'maxlength="30"'); ?></td>
+				<td class="type"><?php echo form_dropdown('type[]', polycomphones_dropdown('attendantType'), $attendant['type'], strpos($attendant['attendant'], 'user_') === 0 ? '' : 'style="display: none"'); ?></td>
 				<td><img src="images/trash.png" class="deleteattendant" style="cursor:pointer; float:none;" alt="remove" title="Click to delete attendent"></td>
 			</tr>
 			<?php
@@ -224,12 +240,14 @@ if(!empty($_GET['edit'])) {
 		<input type="button" class="addattendant" value="<?php echo _("Add Attendant")?>"/>
 		</td>
 	</tr>
-	<tr><td colspan="2"><h5><?php echo _("Phone Options")?><hr/></h5></td></tr>
+	
+	<tr><td colspan="2"><h5 style="margin-bottom: 0"><?php echo _("Phone Options")?><hr/></h5></td></tr>
 	<?php 
 	$phone_options = $device['settings'];
 	$phone_default = true;
 	require 'modules/polycomphones/views/polycomphones_phone_options.php'; 
 	?>
+	
 	<tr><td colspan="2"><h5><?php echo _("Corporate Options")?><hr/></h5></td></tr>	
 	<tr>
 		<td><?php echo _("Corporate Directory")?></td>

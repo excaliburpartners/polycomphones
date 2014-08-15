@@ -1,7 +1,15 @@
 #content{
-	width:80%;
+	width: 80%;
 }
 
 .tablesorter  td {
 	vertical-align: top;
+}
+
+thead td {
+	white-space: nowrap;
+}
+
+thead td span {
+	white-space: normal;
 }

@@ -6,7 +6,7 @@
 <tbody>
 	<tr><td colspan="2"><h5><?php echo _("General Options")?><hr/></h5></td></tr>
 	<tr>
-		<td><?php echo _("Extension Length")?>*</td>
+		<td width="175"><?php echo _("Extension Length")?>*</td>
 		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
 	</tr>
 	<tr>
@@ -17,6 +17,7 @@
 		<td><?php echo _("Applications Home URL")?><span class="help">?<span style="display: none;">The URL of the microbrowser's Home page.</span></span></td>
 		<td><?php echo form_input('mb_main_home', $general['mb_main_home'], 'size="40"'); ?></td>	
 	</tr>
+	
 	<tr><td colspan="2"><h5><?php echo _("Line Default Options")?><hr/></h5></td></tr>			
 	<tr>
 		<td><?php echo _("Line Keys")?><span class="help">?<span style="display: none;">Specify the number of line keys to use for a single registration.</span></span></td>
@@ -34,7 +35,8 @@
 		<td><?php echo _("MWI Callback Mode")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
 		<td><?php echo form_dropdown('callBackMode', polycomphones_dropdown('callBackMode'), $general['callBackMode']); ?></td>	
 	</tr>
-	<tr><td colspan="2"><h5><?php echo _("Phone Default Options")?><hr/></h5></td></tr>	
+	
+	<tr><td colspan="2"><h5 style="margin-bottom: 0"><?php echo _("Phone Default Options")?><hr/></h5></td></tr>	
 	<?php 
 	$phone_options = $general;
 	$phone_default = false;

@@ -242,7 +242,7 @@ function polycomphones_get_phones_edit($id)
 			$device['lines'][$key]['settings'][$setting['keyword']]=$setting['value'];	
 	}
 	
-	$attendants = sql("SELECT attendantid, keyword, value, label FROM polycom_device_attendants
+	$attendants = sql("SELECT attendantid, keyword, value, label, type FROM polycom_device_attendants
 		WHERE id = \"{$db->escapeSimple($id)}\"
 		ORDER BY attendantid",'getAll',DB_FETCHMODE_ASSOC);
 	
@@ -300,10 +300,10 @@ function polycomphones_save_phones_edit($id, $device)
 	sql("DELETE FROM polycom_device_attendants WHERE id = '".$db->escapeSimple($id)."'");
 	
 	foreach($device['attendants'] as $attendantid => $attendant)
-		sql("INSERT INTO polycom_device_attendants (id, attendantid, keyword, value, label) 
+		sql("INSERT INTO polycom_device_attendants (id, attendantid, keyword, value, label, type) 
 			VALUES ('".$db->escapeSimple($id)."','".$db->escapeSimple($attendantid)."','".
 				$db->escapeSimple($attendant['keyword'])."','".$db->escapeSimple($attendant['value'])."','".
-				$db->escapeSimple($attendant['label'])."')");
+				$db->escapeSimple($attendant['label'])."','".$db->escapeSimple($attendant['type'])."')");
 	
 	$entries = array();
 	foreach ($device['settings'] as $key => $val)
@@ -797,6 +797,11 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 		'ringer12' => '12 Ringback-style',
 		'ringer13' => '13 Low Trill Precedence',
 		'ringer14' => '14 Ring Splash',
+	);
+	
+	$dropdowns['attendantType'] = array(
+		'normal' => 'Normal',
+		'automata' => 'Automata', 
 	);
 
 	$dropdowns['callBackMode'] = array(
