@@ -222,7 +222,7 @@ if(DB::IsError($check)) {
 }
 
 // Add model column to devices table
-$sql = "SELECT type FROM polycom_devices";
+$sql = "SELECT model FROM polycom_devices";
 $check = $db->getRow($sql, DB_FETCHMODE_ASSOC);
 if(DB::IsError($check)) {
 	$sql = array();

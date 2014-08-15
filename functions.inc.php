@@ -181,7 +181,7 @@ function polycomphones_get_phones_list()
 {
 	global $db;
 	
-	$results = sql("SELECT id, name, mac, lastconfig, lastip
+	$results = sql("SELECT id, name, mac, model, lastconfig, lastip
 		FROM polycom_devices
 		ORDER BY mac",'getAll',DB_FETCHMODE_ASSOC);
 	

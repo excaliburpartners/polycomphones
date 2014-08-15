@@ -167,10 +167,10 @@ if($polycom_request)
 	preg_match('/FileTransport Polycom([^\/.]*)/', $_SERVER['HTTP_USER_AGENT'], $matches);
 	
 	if($id == null)
-	{		
+	{
 		sql("INSERT INTO polycom_devices (name, mac, model, lastconfig, lastip) 
-			VALUES ('Auto Added','" . $db->escapeSimple($matches[1]) . "','" . 
-			$db->escapeSimple($_GET['mac']) . "',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
+			VALUES ('Auto Added','" . $db->escapeSimple($_GET['mac']) . "','" . 
+			$db->escapeSimple($matches[1]) . "',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
 			
 		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
 		

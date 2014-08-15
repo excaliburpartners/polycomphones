@@ -39,7 +39,8 @@ foreach ($devices as $device) {
 ?>
 <tr>
 	<td>
-		<?php echo $device['name'] ?>
+		<?php echo $device['name'] ?><br />
+		<?php echo $device['model'] ?>
 	</td>
 	<td>
 		<?php echo $device['mac']?>
