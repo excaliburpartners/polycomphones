@@ -41,9 +41,9 @@ foreach ($networks as $network) {
 		<?php echo $network['cidr']?>
 	</td>
 	<td>
-		<img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" title="Click to edit line" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=networks_edit&edit=<?php echo $network['id']?>'">
+		<a href="config.php?type=setup&display=polycomphones&polycomphones_form=networks_edit&edit=<?php echo $network['id']?>" title="Click to edit line"><img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" /></a>
 		<?php if($network['id'] != '-1') { ?>
-		<img src="images/trash.png" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line" onclick="if(confirm('Are you sure you want to delete this network?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=networks_list&delete=<?php echo $network['id']?>'">
+		<img src="images/trash.png" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line" onclick="if(confirm('Are you sure you want to delete this network?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=networks_list&delete=<?php echo $network['id']?>'" />
 		<?php } ?>
 	</td>
 <?php

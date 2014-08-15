@@ -46,7 +46,7 @@ $(document).ready(function() {
 		if($('input[name="mac"]').hasClass("duplicate-exten")) {
 			event.preventDefault();
 		}
-	});
+	});	
 
 	// Functions
 	var updateIndex = function(e, ui) {
@@ -127,6 +127,32 @@ $(document).ready(function() {
 			$('td.type select', tr).val('');
 		}
 	 });
+	 
+	 // Flexible Assignment Validate
+	 var flexibleValidate = function() {
+		$(this).removeClass("duplicate-exten");
+		$(this).next("span").css("display", "none");
+		var inputVal = $(this).val();
+		var characterReg = /^([0-9]+(-[0-9]+)?)(,([0-9]+(-[0-9]+)?))*$/;
+		if(inputVal !='' && !characterReg.test(inputVal)) {
+			$(this).addClass("duplicate-exten");
+			$(this).next("span").css("display", "");
+		}
+	};
+	 
+	 $('input[name="lineKey_category_line"]').keyup(flexibleValidate);
+	 $('input[name="lineKey_category_blf"]').keyup(flexibleValidate);
+	 $('input[name="lineKey_category_favorites"]').keyup(flexibleValidate);
+	 $('input[name="lineKey_category_unassigned"]').keyup(flexibleValidate);
+	
+	$("form").submit(function( event ) {
+		if($('input[name="lineKey_category_line"]').hasClass("duplicate-exten") ||
+			$('input[name="lineKey_category_blf"]').hasClass("duplicate-exten") ||
+			$('input[name="lineKey_category_favorites"]').hasClass("duplicate-exten") ||
+			$('input[name="lineKey_category_unassigned"]').hasClass("duplicate-exten")) {
+			event.preventDefault();
+		}
+	});	
 });
 </script>
 
@@ -162,6 +188,10 @@ if(!empty($_GET['edit'])) {
 		</td>	
 		<?php } ?>
 	</tr>
+	<tr>
+		<td><?php echo _("Model")?></td>
+		<td><?php echo $device['model'] ?></td>	
+	</tr>	
 	
 	<tr><td colspan="3"><h5><?php echo _("Lines")?><hr/></h5></td></tr>	
 	<tr>
@@ -239,6 +269,149 @@ if(!empty($_GET['edit'])) {
 		</table>
 		<input type="button" class="addattendant" value="<?php echo _("Add Attendant")?>"/>
 		</td>
+	</tr>
+	
+	<tr><td colspan="3"><h5><?php echo _("Flexible Key Assignment")?><hr/></h5></td></tr>
+	
+	<tr>
+	<td colspan="2">
+	
+	<table>
+	<tr>
+	<td valign="top">
+	
+	<table>
+		<tr>
+			<td><?php echo _("Flexible Assignment")?>*</td>
+			<td><?php echo form_dropdown('lineKey_reassignment_enabled', polycomphones_dropdown('disabled_enabled'), $device['settings']['lineKey_reassignment_enabled']); ?></td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Line Keys")?>*</td>
+			<td>
+				<?php echo form_input('lineKey_category_line', $device['settings']['lineKey_category_line']); ?>
+				<span style="display: none"><a href="#" title="Invalid key range">
+					<img src="images/notify_critical.png" />
+				</a></span>
+			</td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Attendant Keys")?>*</td>
+			<td>
+				<?php echo form_input('lineKey_category_blf', $device['settings']['lineKey_category_blf']); ?>
+				<span style="display: none"><a href="#" title="Invalid key range">
+					<img src="images/notify_critical.png" />
+				</a></span>
+			</td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Favorite Keys")?>*</td>
+			<td>
+				<?php echo form_input('lineKey_category_favorites', $device['settings']['lineKey_category_favorites']); ?>
+				<span style="display: none"><a href="#" title="Invalid key range">
+					<img src="images/notify_critical.png" />
+				</a></span>
+			</td>	
+		</tr>
+		<tr>
+			<td><?php echo _("Unassigned Keys")?>*</td>
+			<td>
+				<?php echo form_input('lineKey_category_unassigned', $device['settings']['lineKey_category_unassigned']); ?>
+				<span style="display: none"><a href="#" title="Invalid key range">
+					<img src="images/notify_critical.png" />
+				</a></span>
+			</td>	
+		</tr>
+	</table>
+
+	</td>
+	<td valign="top" style="padding-left: 20px">
+	
+	<table>
+	<?php 
+	if(strpos($device['model'], 'SPIP_450') !== false) { 
+	?>
+		<tr>
+			<td>SoundPoint IP 450</td>
+			<td>3 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'SPIP_550') !== false || strpos($device['model'], 'SPIP_560') !== false) { 
+	?>
+		<tr>
+			<td>SoundPoint IP 550/560</td>
+			<td>4 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'SPIP_650') !== false || strpos($device['model'], 'SPIP_670') !== false) { 
+	?>		
+		<tr>
+			<td>SoundPoint IP 650/670</td>
+			<td>6 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'SPIP') !== false && strpos($device['model'], 'SPIP_3') == false) { 
+	?>		
+		<tr>
+			<td>SoundPoint IP Expansion</td>
+			<td>14 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'VVX_300') !== false || strpos($device['model'], 'VVX_310') !== false) { 
+	?>	
+		<tr>
+			<td>VVX 300/310</td>
+			<td>6 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'VVX_400') !== false || strpos($device['model'], 'VVX_410') !== false) { 
+	?>	
+		<tr>
+			<td>VVX 400/410</td>
+			<td>12 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'VVX_500') !== false) { 
+	?>	
+		<tr>
+			<td>VVX 500</td>
+			<td>12 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'VVX_600') !== false) { 
+	?>	
+		<tr>
+			<td>VVX 600</td>
+			<td>16 keys</td>	
+		</tr>
+	<?php 
+	} 
+	if(strpos($device['model'], 'VVX') !== false) { 
+	?>	
+		<tr>
+			<td>VVX Paper Expansion</td>
+			<td>40 keys</td>	
+		</tr>
+		<tr>
+			<td>VVX Color Expansion</td>
+			<td>28 keys x 3 pages</td>	
+		</tr>
+	<?php 
+	} 
+	?>	
+	</table>
+	
+	</td>
+	</tr>
+	</table>
+	
+	</td>
 	</tr>
 	
 	<tr><td colspan="2"><h5 style="margin-bottom: 0"><?php echo _("Phone Options")?><hr/></h5></td></tr>

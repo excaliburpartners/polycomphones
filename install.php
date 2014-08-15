@@ -99,6 +99,7 @@ $sql[]='CREATE TABLE IF NOT EXISTS `polycom_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(30) NOT NULL,
   `mac` varchar(12) NOT NULL,
+  `model` varchar(30) NOT NULL,
   `lastconfig` datetime NOT NULL,
   `lastip` varchar(15) NOT NULL,
   PRIMARY KEY (`id`),
@@ -211,6 +212,21 @@ if(DB::IsError($check)) {
 	$sql = array();
     $sql[] = "ALTER TABLE `polycom_device_attendants` ADD `type` varchar(10) NOT NULL;";
 	$sql[] = "UPDATE polycom_device_attendants SET type = 'normal';";
+	
+	foreach ($sql as $statement){
+		$check = $db->query($statement);
+		if (DB::IsError($check)){
+			die_freepbx( "Can not execute $statement : " . $check->getMessage() .  "\n");
+		}
+	}
+}
+
+// Add model column to devices table
+$sql = "SELECT type FROM polycom_devices";
+$check = $db->getRow($sql, DB_FETCHMODE_ASSOC);
+if(DB::IsError($check)) {
+	$sql = array();
+    $sql[] = "ALTER TABLE `polycom_devices` ADD `model` VARCHAR( 30 ) NOT NULL AFTER `mac`;";
 	
 	foreach ($sql as $statement){
 		$check = $db->query($statement);

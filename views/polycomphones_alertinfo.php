@@ -50,7 +50,7 @@ foreach ($alerts as $alert) {
 		<?php echo $alert['alertinfo']; ?>
 	</td>
 	<td>
-		<img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" title="Click to edit alert info" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=alertinfo_edit&edit=<?php echo $alert['id']?>'">
+		<a href="config.php?type=setup&display=polycomphones&polycomphones_form=alertinfo_edit&edit=<?php echo $alert['id']?>" title="Click to edit alert info"><img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" /></a>
 	</td>
 <?php
 }

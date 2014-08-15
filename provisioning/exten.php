@@ -83,6 +83,10 @@ $xml = new SimpleXMLElement(
     <cfg>
     </cfg>
   </httpd>
+  <lineKey>
+    <reassignment>
+    </reassignment>
+  </lineKey>
   <mb>
     <main>
     </main>
@@ -124,7 +128,7 @@ $xml = new SimpleXMLElement(
     softkey.3.label="Record"
     softkey.3.use.active="1" softkey.3.use.hold="1" softkey.3.precede="0"
     softkey.4.label=""
-    softkey.4.use.idle="1" softkey.4.insert="2">
+    softkey.4.use.idle="1">
     <feature>
       <basicCallManagement>
       </basicCallManagement>
@@ -159,14 +163,14 @@ if($id == null && !$polycom_request)
 
 if($polycom_request)
 {
+	$matches = array();
+	preg_match('/FileTransport Polycom([^\/.]*)/', $_SERVER['HTTP_USER_AGENT'], $matches);
+	
 	if($id == null)
-	{
-		$matches = array();
-		preg_match('/FileTransport Polycom([^\/.]*)/', $_SERVER['HTTP_USER_AGENT'], $matches);
-		
-		sql("INSERT INTO polycom_devices (name, mac, lastconfig, lastip) 
-			VALUES ('" . $db->escapeSimple($matches[1]) . "','" . $db->escapeSimple($_GET['mac']) . 
-			"',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
+	{		
+		sql("INSERT INTO polycom_devices (name, mac, model, lastconfig, lastip) 
+			VALUES ('Auto Added','" . $db->escapeSimple($matches[1]) . "','" . 
+			$db->escapeSimple($_GET['mac']) . "',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
 			
 		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
 		
@@ -174,7 +178,9 @@ if($polycom_request)
 		polycomphones_save_phones_directory($_GET['mac'], array());
 	}
 	else
-		sql("UPDATE polycom_devices SET lastconfig = NOW(), lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
+		sql("UPDATE polycom_devices SET lastconfig = NOW(), 
+			model = '" . $db->escapeSimple($matches[1]) . "',
+			lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
 			WHERE id = '" . $db->escapeSimple($id) . "'");
 }
 
@@ -186,6 +192,7 @@ $parking_module = sql("SELECT id FROM modules WHERE modulename = 'parking' AND e
 
 // Lines
 $primary = '';
+$flexiblekeys = array_reverse(polycomphones_get_flexiblekeys($device, 'line'));
 
 $i=1;
 foreach($device['lines'] as $line)
@@ -241,7 +248,6 @@ foreach($device['lines'] as $line)
 				
 		if($code != '')
 			$xml->msg->mwi->addAttribute("msg.mwi.$i.callBack", $code);
-		
 	}
 	elseif($line['externalid'] != null)
 	{
@@ -264,6 +270,14 @@ foreach($device['lines'] as $line)
 	}
 	else
 		continue;
+		
+	if($device['settings']['lineKey_reassignment_enabled'] == '1')
+		for($j=0; $j<polycomphones_getvalue('lineKeys', $line, $general); $j++)
+		{
+			$key = array_pop($flexiblekeys);
+			$xml->lineKey->addAttribute("lineKey.$key.category", 'line');
+			$xml->lineKey->addAttribute("lineKey.$key.index", $i);
+		}
 
 	$i++;
 }
@@ -368,6 +382,32 @@ foreach($device['attendants'] as $attendant)
 	}
 		
 	$i++;
+}
+
+// Flexible Key Assignment
+if($device['settings']['lineKey_reassignment_enabled'] == '1')
+{
+	$xml->lineKey->reassignment->addAttribute("lineKey.reassignment.enabled", '1');
+	
+	// Attendant
+	foreach(polycomphones_get_flexiblekeys($device, 'blf') as $key)
+	{
+		$xml->lineKey->addAttribute("lineKey.$key.category", 'BLF');
+		$xml->lineKey->addAttribute("lineKey.$key.index", '0');
+	}
+	
+	// Favorites
+	$i=1;
+	foreach(polycomphones_get_flexiblekeys($device, 'favorites') as $key)
+	{
+		$xml->lineKey->addAttribute("lineKey.$key.category", 'speedDial');
+		$xml->lineKey->addAttribute("lineKey.$key.index", $i);
+		$i++;
+	}
+	
+	// Unassigned
+	foreach(polycomphones_get_flexiblekeys($device, 'unassigned') as $key)
+		$xml->lineKey->addAttribute("lineKey.$key.category", 'unassigned');
 }
 
 // Alert Info
@@ -547,8 +587,16 @@ else
 	$xml->softkey->addAttribute("softkey.3.enable", '0');
 	
 // VVX series move DND button to next page
-if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
+$matches = array();
+if(preg_match('/FileTransport PolycomVVX[^\/.]*\/([\d\.]*)/', $_SERVER['HTTP_USER_AGENT'], $matches) == 1)
+{
+	if(version_compare($matches[1], '4.1.6') >= 0)
+		$xml->softkey->addAttribute("softkey.4.insert", '3');
+	else
+		$xml->softkey->addAttribute("softkey.4.insert", '2');
+	
 	$xml->softkey->addAttribute("softkey.4.enable", '1');
+}
 else
 	$xml->softkey->addAttribute("softkey.4.enable", '0');
 

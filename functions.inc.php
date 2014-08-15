@@ -223,7 +223,7 @@ function polycomphones_get_phones_edit($id)
 {
 	global $db;
 	
-	$device = sql("SELECT name, mac FROM polycom_devices
+	$device = sql("SELECT name, mac, model FROM polycom_devices
 		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
 	
 	$lines = sql("SELECT lineid, deviceid, externalid FROM polycom_device_lines 
@@ -895,6 +895,37 @@ function polycomphones_get_dialpad($num)
 	}
 	
 	return $action;
+}
+
+function polycomphones_get_flexiblekeys($device, $type)
+{
+	$keys = array();
+	
+	if(empty($device['settings']['lineKey_category_' . $type]))
+		return $keys;
+	
+	$sections = explode(',', $device['settings']['lineKey_category_' . $type]);
+	
+	foreach($sections as $section)
+	{
+		$range = explode('-', $section);
+		
+		if(count($range) == 1)
+		{
+			$keys[] = $range[0];
+			continue;
+		}
+
+		if(count($range) == 2)
+		{
+			for($i=$range[0]; $i<=$range[1]; $i++)
+				$keys[] = $i;
+			
+			continue;
+		}
+	}
+	
+	return $keys;
 }
 
 ?>

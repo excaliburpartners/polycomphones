@@ -37,8 +37,8 @@ foreach ($lines as $line) {
 		<?php echo $line['name']?>
 	</td>
 	<td>
-		<img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" title="Click to edit line" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=externallines_edit&edit=<?php echo $line['id']?>'">
-		<img src="images/trash.png" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line" onclick="if(confirm('Are you sure you want to delete this line?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=externallines_list&delete=<?php echo $line['id']?>'">
+		<a href="config.php?type=setup&display=polycomphones&polycomphones_form=externallines_edit&edit=<?php echo $line['id']?>" title="Click to edit line"><img src="images/edit.png" style="cursor:pointer; float:none;" alt="edit" /></a>
+		<img src="images/trash.png" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line" onclick="if(confirm('Are you sure you want to delete this line?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=externallines_list&delete=<?php echo $line['id']?>'" />
 	</td>
 <?php
 }

@@ -109,6 +109,11 @@ switch($_GET['polycomphones_form'])
 			}
 
 			$fields = array(
+				'lineKey_reassignment_enabled',
+				'lineKey_category_line',
+				'lineKey_category_blf',
+				'lineKey_category_favorites',
+				'lineKey_category_unassigned',
 				'softkey_feature_basicCallManagement_redundant',
 				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
