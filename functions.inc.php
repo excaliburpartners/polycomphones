@@ -223,7 +223,7 @@ function polycomphones_get_phones_edit($id)
 {
 	global $db;
 	
-	$device = sql("SELECT name, mac, model FROM polycom_devices
+	$device = sql("SELECT name, mac, model, lastconfig, lastip FROM polycom_devices
 		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
 	
 	$lines = sql("SELECT lineid, deviceid, externalid FROM polycom_device_lines 
@@ -759,7 +759,7 @@ function polycomphones_dropdown_attendant()
 	return $dropdown;
 }
 
-function polycomphones_dropdown_numbers($start, $end, $interval = 1, $default = false, $defaultvalue = 'Use Default')
+function polycomphones_dropdown_numbers($start, $end, $interval = 1, $default = false, $defaultvalue = 'Default')
 {
 	$dropdown = array();
 	for($i=$start; $i<=$end; $i = $i+$interval)
@@ -768,11 +768,16 @@ function polycomphones_dropdown_numbers($start, $end, $interval = 1, $default = 
 	return $default ? array(''=>$defaultvalue) + $dropdown : $dropdown;
 }
 
-function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Default')
+function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Default')
 {
 	$dropdowns['disabled_enabled'] = array(
 		'0' => 'Disabled',
 		'1' => 'Enabled',
+	);
+	
+	$dropdowns['client_server'] = array(
+		'0' => 'Client',
+		'1' => 'Server',
 	);
 	
 	$dropdowns['tcpIpApp_sntp_gmtOffset'] = array(
@@ -870,6 +875,13 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 	);
 	
 	return $default ? array(''=>$defaultvalue) + $dropdowns[$id] : $dropdowns[$id];
+}
+
+function polycomphones_check_module($module)
+{
+	global $db;
+	return sql("SELECT id FROM modules 
+		WHERE modulename = '".$db->escapeSimple($module)."' AND enabled = '1'",'getOne');
 }
 
 function polycomphones_getvalue($id, $device, $global)

@@ -14,6 +14,13 @@
 		<td>'.form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), '').'</td>	
 		<td>'.form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), '').'</td>
 		<td>'.form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), '').'</td>	
+		' . ($features_module ? '
+		<td>'.form_dropdown('serverFeatureControl_dnd[]', polycomphones_dropdown('client_server', true), '').'</td>	
+		<td>'.form_dropdown('serverFeatureControl_cf[]', polycomphones_dropdown('client_server', true), '').'</td>
+		' : '
+		<input type="hidden" name="serverFeatureControl_dnd[]" value="">
+		<input type="hidden" name="serverFeatureControl_cf[]" value="">
+		' ) . '		
 		<td><img src="images/trash.png" class="deleteline" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line"></td>
 	</tr>';
 	
@@ -172,26 +179,36 @@ if(!empty($_GET['edit'])) {
 <tbody>
 	<tr><td colspan="2"><h5><?php echo _("Phone Details")?><hr/></h5></td></tr>	
 	<tr>
-		<td width="175"><?php echo _("Phone Name")?></td>
-		<td><?php echo form_input('name', $device['name'], 'size="30" maxlength="30"'); ?></td>	
-	</tr>	
-	<tr>
-		<td><?php echo _("MAC Address")?></td>
-		<?php if(!empty($_GET['edit'])) { ?>
-		<td><?php echo $device['mac'] ?><input type="hidden" name="mac" value="<?php echo $device['mac'] ?>"></td>
-		<?php } else { ?>
-		<td>
-			<?php echo form_input('mac', $device['mac'], 'size="15" maxlength="12"'); ?>
-			<span style="display: none"><a href="#" title="Invalid MAC address">
-				<img src="images/notify_critical.png" />
-			</a></span>
-		</td>	
-		<?php } ?>
+		<td colspan="2">
+		<table>
+			<tr>
+				<td width="175"><?php echo _("Phone Name")?></td>
+				<td width="225"><?php echo form_input('name', $device['name'], 'size="30" maxlength="30"'); ?></td>	
+			</tr>	
+			<tr>
+				<td><?php echo _("MAC Address")?></td>
+				<?php if(!empty($_GET['edit'])) { ?>
+				<td><?php echo $device['mac'] ?><input type="hidden" name="mac" value="<?php echo $device['mac'] ?>"></td>
+				<?php } else { ?>
+				<td>
+					<?php echo form_input('mac', $device['mac'], 'size="15" maxlength="12"'); ?>
+					<span style="display: none"><a href="#" title="Invalid MAC address">
+						<img src="images/notify_critical.png" />
+					</a></span>
+				</td>	
+				<?php } ?>
+				<td width="100"><?php echo _("Last Config")?></td>
+				<td><?php echo $device['lastconfig'] ?></td>	
+			</tr>
+			<tr>
+				<td><?php echo _("Model")?></td>
+				<td><?php echo $device['model'] ?></td>	
+				<td><?php echo _("Last IP")?></td>
+				<td><?php echo $device['lastip'] ?></td>	
+			</tr>
+		</table>
+		</td>
 	</tr>
-	<tr>
-		<td><?php echo _("Model")?></td>
-		<td><?php echo $device['model'] ?></td>	
-	</tr>	
 	
 	<tr><td colspan="3"><h5><?php echo _("Lines")?><hr/></h5></td></tr>	
 	<tr>
@@ -205,7 +222,15 @@ if(!empty($_GET['edit'])) {
 				<td><?php echo _("Line Keys")?><span class="help">?<span style="display: none;">Specify the number of line keys to use for a single registration.</span></span></td>
 				<td><?php echo _("Ring Type")?></td>
 				<td><?php echo _("Missed Call")?>*</td>
-				<td><?php echo _("MWI Callback")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
+				<td><?php echo _("MWI")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
+				<?php
+				if ($features_module) {
+				?>	
+				<td><?php echo _("DND")?><span class="help">?<span style="display: none;">If 'Server', do not disturb settings will use server event feature synchronization.</span></span></td>
+				<td><?php echo _("CF")?><span class="help">?<span style="display: none;">If 'Server', call forward settings will use server event feature synchronization.</span></span></td>
+				<?php
+				}
+				?>
 				<td>&nbsp;</td>
 			</tr>
 		</thead>
@@ -222,6 +247,19 @@ if(!empty($_GET['edit'])) {
 				<td><?php echo form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), $line['settings']['ringType']); ?></td>	
 				<td><?php echo form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), $line['settings']['missedCallTracking']); ?></td>
 				<td><?php echo form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), $line['settings']['callBackMode']); ?></td>	
+				<?php
+				if ($features_module) {
+				?>	
+				<td><?php echo form_dropdown('serverFeatureControl_dnd[]', polycomphones_dropdown('client_server', true), $line['settings']['serverFeatureControl_dnd']); ?></td>	
+				<td><?php echo form_dropdown('serverFeatureControl_cf[]', polycomphones_dropdown('client_server', true), $line['settings']['serverFeatureControl_cf']); ?></td>	
+				<?php
+				} else { 
+				?>
+				<input type="hidden" name="serverFeatureControl_dnd[]" value="<?php echo $line['settings']['serverFeatureControl_dnd']; ?>">
+				<input type="hidden" name="serverFeatureControl_cf[]" value="<?php echo $line['settings']['serverFeatureControl_cf']; ?>">
+				<?php
+				}
+				?>
 				<td><img src="images/trash.png" class="deleteline" style="cursor:pointer; float:none;" alt="remove" title="Click to delete line"></td>
 			</tr>
 			<?php
@@ -423,7 +461,7 @@ if(!empty($_GET['edit'])) {
 	
 	<tr><td colspan="2"><h5><?php echo _("Corporate Options")?><hr/></h5></td></tr>	
 	<tr>
-		<td><?php echo _("Corporate Directory")?></td>
+		<td width="175"><?php echo _("Corporate Directory")?></td>
 		<td><?php echo form_dropdown('feature_corporateDirectory_enabled', polycomphones_dropdown('disabled_enabled', true), $device['settings']['feature_corporateDirectory_enabled']); ?></td>	
 	</tr>
 	<tr>

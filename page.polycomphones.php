@@ -84,6 +84,8 @@ switch($_GET['polycomphones_form'])
 				'ringType',
 				'missedCallTracking',
 				'callBackMode',
+				'serverFeatureControl_dnd',
+				'serverFeatureControl_cf',
 			);
 			
 			foreach ($fields as $field)
@@ -153,6 +155,7 @@ switch($_GET['polycomphones_form'])
 			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');
 		}
 		
+		$features_module = polycomphones_check_module('phonefeatures');
 		$device = polycomphones_get_phones_edit($_GET['edit']);
 		
 		foreach($device['lines'] as $key=>$line)
@@ -362,7 +365,7 @@ switch($_GET['polycomphones_form'])
 			polycomphones_save_general_edit($settings);
 			redirect_standard('polycomphones_form');
 		}
-		
+				
 		$general = polycomphones_get_general_edit();
 		
 		if(!empty($general['dir_corp_password']))
@@ -382,6 +385,8 @@ switch($_GET['polycomphones_form'])
 				'ringType',
 				'missedCallTracking',
 				'callBackMode',
+				'serverFeatureControl_dnd',
+				'serverFeatureControl_cf',
 				'softkey_feature_basicCallManagement_redundant',
 				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
@@ -425,6 +430,7 @@ switch($_GET['polycomphones_form'])
 			redirect_standard('polycomphones_form');
 		}
 		
+		$features_module = polycomphones_check_module('phonefeatures');
 		$general = polycomphones_get_general_edit();
 		require 'modules/polycomphones/views/polycomphones_general.php';
 		break;

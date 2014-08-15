@@ -17,6 +17,8 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('ringType', 'ringer2'),
 ('missedCallTracking', '1'),
 ('callBackMode', 'contact'),
+('serverFeatureControl_dnd', '0'),
+('serverFeatureControl_cf', '0'),
 ('softkey_feature_basicCallManagement_redundant', '1'),
 ('call_transfer_blindPreferred', '0'),
 ('call_callWaiting_ring', 'beep'),

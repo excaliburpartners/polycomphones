@@ -187,8 +187,9 @@ if($polycom_request)
 $device = polycomphones_get_phones_edit($id);
 $alerts = polycomphones_get_alertinfo_list();
 $general = polycomphones_get_general_edit();
-$exchange_module = sql("SELECT id FROM modules WHERE modulename = 'exchangeum' AND enabled = '1'",'getOne');
-$parking_module = sql("SELECT id FROM modules WHERE modulename = 'parking' AND enabled = '1'",'getOne');
+$exchange_module = polycomphones_check_module('exchangeum');
+$parking_module = polycomphones_check_module('parking');
+$features_module = polycomphones_check_module('phonefeatures');
 
 // Lines
 $primary = '';
@@ -235,6 +236,12 @@ foreach($device['lines'] as $line)
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.subscribe", $details['id']);
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", polycomphones_getvalue('callBackMode', $line, $general));
 		
+		if($features_module)
+		{
+			$xml->reg->addAttribute("reg.$i.serverFeatureControl.dnd", polycomphones_getvalue('serverFeatureControl_dnd', $line, $general));
+			$xml->reg->addAttribute("reg.$i.serverFeatureControl.cf", polycomphones_getvalue('serverFeatureControl_cf', $line, $general));
+		}
+		
 		$exchangevm = null;
 		
 		if($exchange_module)
@@ -267,6 +274,12 @@ foreach($device['lines'] as $line)
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.subscribe", $details['settings']['user']);
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", polycomphones_getvalue('callBackMode', $line, $general));
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBack", $details['settings']['mwicallback']);
+		
+		if($features_module)
+		{
+			$xml->reg->addAttribute("reg.$i.serverFeatureControl.dnd", polycomphones_getvalue('serverFeatureControl_dnd', $line, $general));
+			$xml->reg->addAttribute("reg.$i.serverFeatureControl.cf", polycomphones_getvalue('serverFeatureControl_cf', $line, $general));
+		}
 	}
 	else
 		continue;
@@ -294,7 +307,7 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code.$primary);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'Call Forward');
 		}
@@ -307,7 +320,7 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code.$primary);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'DND');
 		}
@@ -320,21 +333,21 @@ foreach($device['attendants'] as $attendant)
 	
 		if($code != '' && $primary != '')
 		{
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.$primary.'@'.$network['settings']['address']);
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code.$primary);
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : 'Follow Me');
 		}
 	}
 	elseif($attendant['keyword'] == 'user')
 	{
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $attendant['value']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.type", $attendant['type']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : $attendant['value']);
 	}
 	elseif($attendant['keyword'] == 'parking')
 	{
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $attendant['value']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : 'Park '.$attendant['value']);
 	}
@@ -343,7 +356,7 @@ foreach($device['attendants'] as $attendant)
 		$confname = sql("SELECT description FROM meetme 
 			WHERE exten = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", $attendant['value']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : $confname);
 	}
@@ -359,7 +372,7 @@ foreach($device['attendants'] as $attendant)
 				WHERE dmode = 'fc_description' 
 				AND ext = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$network['settings']['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code);	
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : ($flowname ? $flowname : $code));
 		}
@@ -375,7 +388,7 @@ foreach($device['attendants'] as $attendant)
 			$timename = sql("SELECT displayname FROM timeconditions 
 				WHERE timeconditions_id = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$network['settings']['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", $code);	
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : $timename);
 		}

@@ -35,6 +35,25 @@
 		<td><?php echo _("MWI Callback Mode")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>
 		<td><?php echo form_dropdown('callBackMode', polycomphones_dropdown('callBackMode'), $general['callBackMode']); ?></td>	
 	</tr>
+	<?php
+	if ($features_module) {
+	?>	
+	<tr>
+		<td><?php echo _("Do Not Disturb Control")?><span class="help">?<span style="display: none;">If 'Server', do not disturb settings will use server event feature synchronization.</span></span></td>
+		<td><?php echo form_dropdown('serverFeatureControl_dnd', polycomphones_dropdown('client_server'), $general['serverFeatureControl_dnd']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("Call Forward Control")?><span class="help">?<span style="display: none;">If 'Server', call forward settings will use server event feature synchronization.</span></span></td>
+		<td><?php echo form_dropdown('serverFeatureControl_cf', polycomphones_dropdown('client_server'), $general['serverFeatureControl_cf']); ?></td>	
+	</tr>
+	<?php
+	} else { 
+	?>
+	<input type="hidden" name="serverFeatureControl_dnd" value="<?php echo $general['serverFeatureControl_dnd']; ?>">
+	<input type="hidden" name="serverFeatureControl_cf" value="<?php echo $general['serverFeatureControl_cf']; ?>">
+	<?php
+	}
+	?>
 	
 	<tr><td colspan="2"><h5 style="margin-bottom: 0"><?php echo _("Phone Default Options")?><hr/></h5></td></tr>	
 	<?php 
