@@ -4,26 +4,10 @@
 <form name="polycomphones_general" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=general_edit">
 <table>		
 <tbody>
-	<tr><td colspan="2"><h5><?php echo _("Network Options")?><hr/></h5></td></tr>
-	<tr>
-		<td width="175"><?php echo _("Registration Address")?>*</td>
-		<td><?php echo form_input('address', $general['address']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Registration Port")?>*<span class="help">?<span style="display: none;">Example: 5060</span></span></td>
-		<td><?php echo form_input('port', $general['port'], 'size="10"'); ?></td>	
-	</tr>
+	<tr><td colspan="2"><h5><?php echo _("General Options")?><hr/></h5></td></tr>
 	<tr>
 		<td><?php echo _("Extension Length")?>*</td>
 		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("NTP Server")?><span class="help">?<span style="display: none;">Example: pool.ntp.org</span></span></td>
-		<td><?php echo form_input('tcpIpApp_sntp_address', $general['tcpIpApp_sntp_address']); ?></td>	
-	</tr>
-	<tr>
-		<td><?php echo _("Time Zone")?></td>
-		<td><?php echo form_dropdown('tcpIpApp_sntp_gmtOffset', polycomphones_dropdown('tcpIpApp_sntp_gmtOffset', true, ''), $general['tcpIpApp_sntp_gmtOffset']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Applications Home URL")?></td>

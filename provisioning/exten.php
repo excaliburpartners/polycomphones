@@ -97,6 +97,12 @@ $xml = new SimpleXMLElement(
     </officeHours>
   </powerSaving>
   <se>
+    <pat>
+      <misc>
+        <messageWaiting>
+         </messageWaiting>
+      </misc>
+    </pat>
     <rt>
     </rt>
   </se>
@@ -158,6 +164,7 @@ if($polycom_request)
 
 $device = polycomphones_get_phones_edit($id);
 $alerts = polycomphones_get_alertinfo_list();
+$network = polycomphones_get_networks_ip($_SERVER['REMOTE_ADDR']);
 $general = polycomphones_get_general_edit();
 $exchange_module = sql("SELECT id FROM modules WHERE modulename = 'exchangeum' AND enabled = '1'",'getOne');
 $parking_module = sql("SELECT id FROM modules WHERE modulename = 'parking' AND enabled = '1'",'getOne');
@@ -197,8 +204,8 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.label", $details['user']);
 		$xml->reg->addAttribute("reg.$i.auth.userId", $details['id']);
 		$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
-		$xml->reg->addAttribute("reg.$i.server.1.address", $general['address']);
-		$xml->reg->addAttribute("reg.$i.server.1.port", $general['port']);
+		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
+		$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
 		$xml->reg->addAttribute("reg.$i.lineKeys", getvalue('lineKeys', $line, $general));
 		$xml->reg->addAttribute("reg.$i.ringType", getvalue('ringType', $line, $general));
@@ -291,13 +298,13 @@ foreach($device['attendants'] as $attendant)
 	}
 	elseif($attendant['keyword'] == 'user')
 	{
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$general['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : $attendant['value']);
 	}
 	elseif($attendant['keyword'] == 'parking')
 	{
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$general['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : 'Park '.$attendant['value']);
 	}
@@ -306,7 +313,7 @@ foreach($device['attendants'] as $attendant)
 		$confname = sql("SELECT description FROM meetme 
 			WHERE exten = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 	
-		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$general['address']);
+		$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$attendant['value'].'@'.$network['settings']['address']);
 		$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 			!empty($attendant['label']) ? $attendant['label'] : $confname);
 	}
@@ -322,7 +329,7 @@ foreach($device['attendants'] as $attendant)
 				WHERE dmode = 'fc_description' 
 				AND ext = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$general['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$network['settings']['address']);	
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : ($flowname ? $flowname : $code));
 		}
@@ -338,7 +345,7 @@ foreach($device['attendants'] as $attendant)
 			$timename = sql("SELECT displayname FROM timeconditions 
 				WHERE timeconditions_id = '" . $db->escapeSimple($attendant['value']) . "'",'getOne');
 
-			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$general['address']);	
+			$xml->attendant->addAttribute("attendant.resourceList.$i.address", 'sip:'.$code.'@'.$network['settings']['address']);	
 			$xml->attendant->addAttribute("attendant.resourceList.$i.label", 
 				!empty($attendant['label']) ? $attendant['label'] : $timename);
 		}
@@ -368,6 +375,17 @@ foreach($alerts as $alert)
 	}
 }
 
+// Network Settings
+if(!empty($network['settings']['tcpIpApp_sntp_address']))
+	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address", $network['settings']['tcpIpApp_sntp_address']);
+
+$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address.overrideDHCP", $network['settings']['tcpIpApp_sntp_address_overrideDHCP']);
+	
+if(!empty($network['settings']['tcpIpApp_sntp_gmtOffset']))
+	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset", $network['settings']['tcpIpApp_sntp_gmtOffset']);
+
+$xml->nat->keepalive->addAttribute("nat.keepalive.interval", $network['settings']['nat_keepalive_interval']);
+	
 // General Settings
 $xml->apps->push->addAttribute("apps.push.password", $general['apps_push_password']);
 
@@ -377,26 +395,21 @@ for($i=1; $i<$general['digits']; $i++)
 
 $xml->dialplan->addAttribute("dialplan.digitmap", "*x.T|**[1-9]".$digits."|[2-9]11|0T|011xxx.T|[0-1][2-9]xxxxxxxxx|[2-9]xxxxxxxxx|[1-9]".$digits."T");
 
-if(!empty($general['tcpIpApp_sntp_address']))
-	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address", $general['tcpIpApp_sntp_address']);
-	
-if(!empty($general['tcpIpApp_sntp_gmtOffset']))
-	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset", $general['tcpIpApp_sntp_gmtOffset']);
-
 if(!empty($general['mb_main_home']))
 	$xml->mb->main->addAttribute("mb.main.home", $general['mb_main_home']);
 
 $xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
-$xml->up->addAttribute("up.useDirectoryNames", getvalue('up_useDirectoryNames', $device, $general));
 $xml->call->callWaiting->addAttribute("call.transfer.blindPreferred", getvalue('call_transfer_blindPreferred', $device, $general));
 $xml->call->callWaiting->addAttribute("call.callWaiting.ring", getvalue('call_callWaiting_ring', $device, $general));
 $xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", getvalue('call_hold_localReminder_enabled', $device, $general));
 $xml->call->addAttribute("call.rejectBusyOnDnd", getvalue('call_rejectBusyOnDnd', $device, $general));
+$xml->up->addAttribute("up.headsetMode", getvalue('up_headsetMode', $device, $general));
+$xml->up->addAttribute("up.analogHeadsetOption", getvalue('up_analogHeadsetOption', $device, $general));
+$xml->up->addAttribute("up.useDirectoryNames", getvalue('up_useDirectoryNames', $device, $general));
 $xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", getvalue('feature_directedCallPickup_enabled', $device, $general));
 $xml->powerSaving->addAttribute("powerSaving.enable", getvalue('powerSaving_enable', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.idleIntensity", getvalue('up_backlight_idleIntensity', $device, $general));
 $xml->up->backlight->addAttribute("up.backlight.onIntensity", getvalue('up_backlight_onIntensity', $device, $general));
-$xml->nat->keepalive->addAttribute("nat.keepalive.interval", getvalue('nat_keepalive_interval', $device, $general));
 $xml->apps->ucdesktop->addAttribute("apps.ucdesktop.adminEnabled", getvalue('apps_ucdesktop_adminEnabled', $device, $general));
 
 $xml->powerSaving->idleTimeout->addAttribute("powerSaving.idleTimeout.officeHours", $general['powerSaving_idleTimeout_officeHours']);
@@ -425,6 +438,14 @@ if(getvalue('feature_directedCallPickup_enabled', $device, $general) == '1')
 else
 {
 	$xml->attendant->behaviors->display->spontaneousCallAppearances->addAttribute("attendant.behaviors.display.spontaneousCallAppearances.normal", "0");
+}
+
+// MWI Audible Alert
+if(getvalue('se_pat_misc_messageWaiting_inst', $device, $general) == '0')
+{
+	$xml->se->pat->misc->messageWaiting->addAttribute("se.pat.misc.messageWaiting.inst.1.type", "silenced");
+	$xml->se->pat->misc->messageWaiting->addAttribute("se.pat.misc.messageWaiting.inst.2.type", "silenced");
+	$xml->se->pat->misc->messageWaiting->addAttribute("se.pat.misc.messageWaiting.inst.3.type", "silenced");
 }
 
 // Corporate Settings

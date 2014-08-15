@@ -442,6 +442,94 @@ function polycomphones_save_alertinfo_edit($id, $alert)
 	WHERE id = '".$db->escapeSimple($id)."'");
 }
 
+function polycomphones_get_networks_list() 
+{
+	global $db;
+	
+	$results = sql("SELECT id, name, cidr FROM polycom_networks ORDER BY cidr",'getAll',DB_FETCHMODE_ASSOC);
+		
+	return $results;
+}
+
+function polycomphones_delete_networks_list($id)
+{
+	global $db;
+	
+	sql("DELETE FROM polycom_networks WHERE id = '".$db->escapeSimple($id)."'");
+	sql("DELETE FROM polycom_network_settings WHERE id = '".$db->escapeSimple($id)."'");
+}
+
+function polycomphones_get_networks_edit($id) 
+{
+	global $db;
+	
+	$network = sql("SELECT name, cidr FROM polycom_networks
+		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
+	
+	$settings = sql("SELECT keyword, value FROM polycom_network_settings
+		WHERE id = \"{$db->escapeSimple($id)}\"",'getAll',DB_FETCHMODE_ASSOC);
+
+	foreach($settings as $setting)
+		$network['settings'][$setting['keyword']]=$setting['value'];
+		
+	return $network;
+}
+
+function polycomphones_save_networks_edit($id, $network)
+{
+	global $db;
+	
+	if(empty($id))
+	{
+		sql("INSERT INTO polycom_networks (name, cidr) 
+			VALUES ('".$db->escapeSimple($network['name'])."', '".$db->escapeSimple($network['cidr'])."')");		
+		$results = sql("SELECT LAST_INSERT_ID()",'getAll',DB_FETCHMODE_ASSOC);
+		
+		if(count($results) > 0)
+			$id = $results[0]['LAST_INSERT_ID()'];
+		else
+			die_freepbx('Unable to determine SQL insert id');
+	}
+	else
+		sql("UPDATE polycom_networks SET 
+			name = '".$db->escapeSimple($network['name'])."',
+			cidr = '".$db->escapeSimple($network['cidr'])."'
+		WHERE id = '".$db->escapeSimple($id)."'");
+
+	$entries = array();
+	foreach ($network['settings'] as $key => $val)
+		$entries[] = '\''.$db->escapeSimple($id).'\',\''.$db->escapeSimple($key).'\',\''.$db->escapeSimple($val).'\'';
+
+	if(count($entries) > 0)
+		sql("REPLACE INTO polycom_network_settings (id, keyword, value) 
+			VALUES (" . implode('),(', $entries) . ")");
+}
+
+function polycomphones_cidr_ip_check ($ip, $cidr) 
+{
+	list ($net, $mask) = split ("/", $cidr);
+	
+	$ip_net = ip2long ($net);
+	$ip_mask = ~((1 << (32 - $mask)) - 1);
+
+	$ip_ip = ip2long ($ip);
+
+	$ip_ip_net = $ip_ip & $ip_mask;
+
+	return ($ip_ip_net == $ip_net);
+}
+
+function polycomphones_get_networks_ip($ip)
+{
+	global $db;
+	
+	$results = sql("SELECT id, cidr FROM polycom_networks ORDER BY cidr DESC",'getAll',DB_FETCHMODE_ASSOC);
+	
+	foreach($results as $result)
+		if(polycomphones_cidr_ip_check($ip, $result['cidr']))
+			return polycomphones_get_networks_edit($result['id']);
+}
+
 function polycomphones_get_general_edit() 
 {
 	global $db;
@@ -644,6 +732,13 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 		'beep' => 'Beep',
 		'ring' => 'Ring',
 		'silent' => 'Silent',
+	);
+	
+	$dropdowns['up_analogHeadsetOption'] = array(
+		'0' => 'Regular Mode',
+		'1' => 'Jabra EHS',
+		'2' => 'Plantronics EHS',
+		'3' => 'Sennheiser EHS',
 	);
 	
 	$dropdowns['up_backlight_idleIntensity'] = array(

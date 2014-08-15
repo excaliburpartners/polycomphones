@@ -17,16 +17,18 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('missedCallTracking', '1'),
 ('callBackMode', 'contact'),
 ('softkey_feature_basicCallManagement_redundant', '1'),
-('up_useDirectoryNames', '1'),
 ('call_transfer_blindPreferred', '0'),
 ('call_callWaiting_ring', 'beep'),
 ('call_hold_localReminder_enabled', '0'),
 ('call_rejectBusyOnDnd', '1'),
+('up_headsetMode', '0'),
+('up_analogHeadsetOption', '0'),
+('up_useDirectoryNames', '1'),
 ('feature_directedCallPickup_enabled', '0'),
+('se_pat_misc_messageWaiting_inst', '1'),
 ('powerSaving_enable', '0'),
 ('up_backlight_idleIntensity', '1'),
 ('up_backlight_onIntensity', '3'),
-('nat_keepalive_interval', '0'),
 ('apps_ucdesktop_adminEnabled', '0');";
 
 $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
@@ -51,6 +53,39 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('feature_corporateDirectory_enabled', '0'),
 ('feature_exchangeCalendar_enabled', '0');";
 
+$sql[]='CREATE TABLE IF NOT EXISTS `polycom_networks` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `name` varchar(30) NOT NULL,
+  `cidr` varchar(18) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cidr` (`cidr`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;';
+
+$sql[]="INSERT IGNORE INTO `polycom_networks` (`id`, `name`, `cidr`) VALUES
+('-1', 'Default Network', '0.0.0.0/0');";
+
+$sql[]='CREATE TABLE IF NOT EXISTS `polycom_network_settings` (
+  `id` int(11) NOT NULL,
+  `keyword` varchar(50) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`,`keyword`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;';
+
+// Migrate general settings to network settings
+$sql[]="INSERT INTO polycom_network_settings (id, keyword, value) 
+SELECT '-1', keyword, value FROM polycom_settings 
+WHERE keyword IN ('address', 'port', 'tcpIpApp_sntp_address', 'tcpIpApp_sntp_gmtOffset', 'nat_keepalive_interval')";
+
+// Delete migrated network settings
+$sql[]="DELETE FROM polycom_settings 
+WHERE keyword IN ('address', 'port', 'tcpIpApp_sntp_address', 'tcpIpApp_sntp_gmtOffset', 'nat_keepalive_interval')";
+
+$sql[]="INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
+('-1', 'address', '" . $db->escapeSimple($_SERVER['SERVER_NAME']) . "'),
+('-1', 'port', '5060'),
+('-1', 'nat_keepalive_interval', '0'),
+('-1', 'tcpIpApp_sntp_address_overrideDHCP', '0');";
+
 $sql[]='CREATE TABLE IF NOT EXISTS `polycom_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(30) NOT NULL,
@@ -67,6 +102,10 @@ $sql[]='CREATE TABLE IF NOT EXISTS `polycom_device_settings` (
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`,`keyword`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;';
+
+// Delete migrated network settings
+$sql[]="DELETE FROM polycom_device_settings
+WHERE keyword IN ('nat_keepalive_interval')";
 
 $sql[]='CREATE TABLE IF NOT EXISTS `polycom_device_lines` (
   `id` int(11) NOT NULL,

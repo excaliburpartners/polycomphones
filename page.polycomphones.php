@@ -50,7 +50,7 @@ switch($_GET['polycomphones_form'])
 		if(isset($_POST['action']) && $_POST['action'] == 'edit')
 		{	
 			$device['name'] = $_POST['name'];
-			$device['mac'] = $_POST['mac'];
+			$device['mac'] = strtolower($_POST['mac']);
 			
 			foreach($_POST['line'] as $key=>$value)
 			{	
@@ -94,16 +94,18 @@ switch($_GET['polycomphones_form'])
 
 			$fields = array(
 				'softkey_feature_basicCallManagement_redundant',
-				'up_useDirectoryNames',
 				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'up_headsetMode',
+				'up_analogHeadsetOption',
+				'up_useDirectoryNames',
 				'feature_directedCallPickup_enabled',
+				'se_pat_misc_messageWaiting_inst',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
-				'nat_keepalive_interval',
 				'apps_ucdesktop_adminEnabled',
 				'feature_corporateDirectory_enabled',
 				'feature_exchangeCalendar_enabled',
@@ -254,6 +256,43 @@ switch($_GET['polycomphones_form'])
 		$alert = polycomphones_get_alertinfo_edit($_GET['edit']);
 		require 'modules/polycomphones/views/polycomphones_alertinfo_edit.php';
 		break;
+		
+	case 'networks_list':
+		if(isset($_GET['delete']))
+		{
+			polycomphones_delete_networks_list($_GET['delete']);
+			redirect_standard('polycomphones_form');
+		}
+	
+		$networks = polycomphones_get_networks_list();
+		require 'modules/polycomphones/views/polycomphones_networks.php';
+		break;
+		
+	case 'networks_edit':
+		if(isset($_POST['action']) && $_POST['action'] == 'edit')
+		{
+			$network['name'] = $_POST['name'];
+			$network['cidr'] = $_POST['cidr'];
+			
+			$fields = array(
+				'address',
+				'port',
+				'tcpIpApp_sntp_address',
+				'tcpIpApp_sntp_address_overrideDHCP',
+				'tcpIpApp_sntp_gmtOffset',
+				'nat_keepalive_interval',
+			);
+			
+			foreach ($fields as $field)
+				$network['settings'][$field] = $_POST[$field];
+
+			polycomphones_save_networks_edit($_GET['edit'], $network);
+			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=networks_list');
+		}
+		
+		$network = polycomphones_get_networks_edit($_GET['edit']);
+		require 'modules/polycomphones/views/polycomphones_networks_edit.php';
+		break;
 	
 	case 'corporate_edit';
 		if(isset($_POST['action']) && $_POST['action'] == 'edit')
@@ -291,27 +330,25 @@ switch($_GET['polycomphones_form'])
 		if(isset($_POST['action']) && $_POST['action'] == 'edit')
 		{
 			$fields = array(
-				'address',
-				'port',
 				'digits',
-				'tcpIpApp_sntp_address',
-				'tcpIpApp_sntp_gmtOffset',
 				'mb_main_home',
 				'lineKeys',
 				'ringType',
 				'missedCallTracking',
 				'callBackMode',
 				'softkey_feature_basicCallManagement_redundant',
-				'up_useDirectoryNames',
 				'call_transfer_blindPreferred',
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'up_headsetMode',
+				'up_analogHeadsetOption',
+				'up_useDirectoryNames',
 				'feature_directedCallPickup_enabled',
+				'se_pat_misc_messageWaiting_inst',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
-				'nat_keepalive_interval',
 				'apps_ucdesktop_adminEnabled',
 				'powerSaving_idleTimeout_officeHours',
 				'powerSaving_idleTimeout_offHours',
