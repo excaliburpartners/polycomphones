@@ -12,6 +12,7 @@ $sql[]='CREATE TABLE IF NOT EXISTS `polycom_settings` (
 $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('apps_push_password', '" . substr(hash('sha512',rand()),0,12) . "'),
 ('digits', '4'),
+('httpd_cfg_enabled', '1'),
 ('lineKeys', '1'),
 ('ringType', 'ringer2'),
 ('missedCallTracking', '1'),
@@ -21,11 +22,12 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('call_callWaiting_ring', 'beep'),
 ('call_hold_localReminder_enabled', '0'),
 ('call_rejectBusyOnDnd', '1'),
+('se_pat_misc_messageWaiting_inst', '1'),
 ('up_headsetMode', '0'),
 ('up_analogHeadsetOption', '0'),
 ('up_useDirectoryNames', '1'),
+('dir_local_readonly', '0'),
 ('feature_directedCallPickup_enabled', '0'),
-('se_pat_misc_messageWaiting_inst', '1'),
 ('powerSaving_enable', '0'),
 ('up_backlight_idleIntensity', '1'),
 ('up_backlight_onIntensity', '3'),
@@ -212,17 +214,14 @@ if(!is_link($amp_conf['AMPWEBROOT'] . "/admin/assets/polycomphones"))
 }
 
 // Create directory for phone software
-if(!file_exists(SOFTWARE_PATH)) 
+foreach(array('', 'logs', 'overrides', 'contacts') as $folder)
 {
-    out("Creating phone software directory");
-	if(!mkdir(SOFTWARE_PATH, 0775)) {
-		out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", phone software directory not created!</strong>");
-	}
-	if(!mkdir(SOFTWARE_PATH."logs", 0775)) {
-		out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", phone software directory not created!</strong>");
-	}
-	if(!mkdir(SOFTWARE_PATH."contacts", 0775)) {
-		out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", phone software directory not created!</strong>");
+	if(!file_exists(SOFTWARE_PATH.$folder)) 
+	{
+		out("Creating phone software " . (empty($folder) ? 'root' : $folder) . " directory");
+		if(!mkdir(SOFTWARE_PATH.$folder, 0775)) {
+			out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", phone software directory not created!</strong>");
+		}
 	}
 }
 

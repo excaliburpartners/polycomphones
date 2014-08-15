@@ -1,6 +1,6 @@
 <?php
 
-if(!isset($_GET['mac']))
+if(!isset($_GET['mac']) || preg_match('/^([a-f0-9]{12})$/', $_GET['mac']) != 1)
   die();
 
 $bootstrap_settings['freepbx_auth'] = false;
@@ -51,6 +51,8 @@ $xml = new SimpleXMLElement(
   <dir>
     <corp>
     </corp>
+    <local>
+    </local>
   </dir>
   <exchange>
     <server>
@@ -77,6 +79,10 @@ $xml = new SimpleXMLElement(
     <exchangeCalendar>
     </exchangeCalendar>
   </feature>
+  <httpd>
+    <cfg>
+    </cfg>
+  </httpd>
   <mb>
     <main>
     </main>
@@ -159,6 +165,9 @@ if($polycom_request)
 			"',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
 			
 		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
+		
+		polycomphones_clear_overrides($_GET['mac']);
+		polycomphones_save_phones_directory($_GET['mac'], array());
 	}
 	else
 		sql("UPDATE polycom_devices SET lastconfig = NOW(), lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
@@ -209,11 +218,11 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
 		$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
-		$xml->reg->addAttribute("reg.$i.lineKeys", getvalue('lineKeys', $line, $general));
-		$xml->reg->addAttribute("reg.$i.ringType", getvalue('ringType', $line, $general));
-		$xml->call->missedCallTracking->addAttribute("call.missedCallTracking.$i.enabled", getvalue('missedCallTracking', $line, $general));	
+		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
+		$xml->reg->addAttribute("reg.$i.ringType", polycomphones_getvalue('ringType', $line, $general));
+		$xml->call->missedCallTracking->addAttribute("call.missedCallTracking.$i.enabled", polycomphones_getvalue('missedCallTracking', $line, $general));	
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.subscribe", $details['id']);
-		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", getvalue('callBackMode', $line, $general));
+		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", polycomphones_getvalue('callBackMode', $line, $general));
 		
 		$exchangevm = null;
 		
@@ -242,11 +251,11 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.server.1.port", $details['settings']['port']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", $details['settings']['transport']);
 		$xml->reg->addAttribute("reg.$i.server.1.register", $details['settings']['register']);
-		$xml->reg->addAttribute("reg.$i.lineKeys", getvalue('lineKeys', $line, $general));
-		$xml->reg->addAttribute("reg.$i.ringType", getvalue('ringType', $line, $general));
-		$xml->call->missedCallTracking->addAttribute("call.missedCallTracking.$i.enabled", getvalue('missedCallTracking', $line, $general));	
+		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
+		$xml->reg->addAttribute("reg.$i.ringType", polycomphones_getvalue('ringType', $line, $general));
+		$xml->call->missedCallTracking->addAttribute("call.missedCallTracking.$i.enabled", polycomphones_getvalue('missedCallTracking', $line, $general));	
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.subscribe", $details['settings']['user']);
-		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", getvalue('callBackMode', $line, $general));
+		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBackMode", polycomphones_getvalue('callBackMode', $line, $general));
 		$xml->msg->mwi->addAttribute("msg.mwi.$i.callBack", $details['settings']['mwicallback']);
 	}
 	else
@@ -390,6 +399,7 @@ $xml->nat->keepalive->addAttribute("nat.keepalive.interval", $network['settings'
 	
 // General Settings
 $xml->apps->push->addAttribute("apps.push.password", $general['apps_push_password']);
+$xml->httpd->cfg->addAttribute("httpd.cfg.enabled", $general['httpd_cfg_enabled']);
 
 $digits = '';
 for($i=1; $i<$general['digits']; $i++)
@@ -400,19 +410,20 @@ $xml->dialplan->addAttribute("dialplan.digitmap", "*x.T|**[1-9]".$digits."|[2-9]
 if(!empty($general['mb_main_home']))
 	$xml->mb->main->addAttribute("mb.main.home", $general['mb_main_home']);
 
-$xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
-$xml->call->callWaiting->addAttribute("call.transfer.blindPreferred", getvalue('call_transfer_blindPreferred', $device, $general));
-$xml->call->callWaiting->addAttribute("call.callWaiting.ring", getvalue('call_callWaiting_ring', $device, $general));
-$xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", getvalue('call_hold_localReminder_enabled', $device, $general));
-$xml->call->addAttribute("call.rejectBusyOnDnd", getvalue('call_rejectBusyOnDnd', $device, $general));
-$xml->up->addAttribute("up.headsetMode", getvalue('up_headsetMode', $device, $general));
-$xml->up->addAttribute("up.analogHeadsetOption", getvalue('up_analogHeadsetOption', $device, $general));
-$xml->up->addAttribute("up.useDirectoryNames", getvalue('up_useDirectoryNames', $device, $general));
-$xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", getvalue('feature_directedCallPickup_enabled', $device, $general));
-$xml->powerSaving->addAttribute("powerSaving.enable", getvalue('powerSaving_enable', $device, $general));
-$xml->up->backlight->addAttribute("up.backlight.idleIntensity", getvalue('up_backlight_idleIntensity', $device, $general));
-$xml->up->backlight->addAttribute("up.backlight.onIntensity", getvalue('up_backlight_onIntensity', $device, $general));
-$xml->apps->ucdesktop->addAttribute("apps.ucdesktop.adminEnabled", getvalue('apps_ucdesktop_adminEnabled', $device, $general));
+$xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", polycomphones_getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
+$xml->call->callWaiting->addAttribute("call.transfer.blindPreferred", polycomphones_getvalue('call_transfer_blindPreferred', $device, $general));
+$xml->call->callWaiting->addAttribute("call.callWaiting.ring", polycomphones_getvalue('call_callWaiting_ring', $device, $general));
+$xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", polycomphones_getvalue('call_hold_localReminder_enabled', $device, $general));
+$xml->call->addAttribute("call.rejectBusyOnDnd", polycomphones_getvalue('call_rejectBusyOnDnd', $device, $general));
+$xml->up->addAttribute("up.headsetMode", polycomphones_getvalue('up_headsetMode', $device, $general));
+$xml->up->addAttribute("up.analogHeadsetOption", polycomphones_getvalue('up_analogHeadsetOption', $device, $general));
+$xml->up->addAttribute("up.useDirectoryNames", polycomphones_getvalue('up_useDirectoryNames', $device, $general));
+$xml->dir->local->addAttribute("dir.local.readonly", polycomphones_getvalue('dir_local_readonly', $device, $general));
+$xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", polycomphones_getvalue('feature_directedCallPickup_enabled', $device, $general));
+$xml->powerSaving->addAttribute("powerSaving.enable", polycomphones_getvalue('powerSaving_enable', $device, $general));
+$xml->up->backlight->addAttribute("up.backlight.idleIntensity", polycomphones_getvalue('up_backlight_idleIntensity', $device, $general));
+$xml->up->backlight->addAttribute("up.backlight.onIntensity", polycomphones_getvalue('up_backlight_onIntensity', $device, $general));
+$xml->apps->ucdesktop->addAttribute("apps.ucdesktop.adminEnabled", polycomphones_getvalue('apps_ucdesktop_adminEnabled', $device, $general));
 
 $xml->powerSaving->idleTimeout->addAttribute("powerSaving.idleTimeout.officeHours", $general['powerSaving_idleTimeout_officeHours']);
 $xml->powerSaving->idleTimeout->addAttribute("powerSaving.idleTimeout.offHours", $general['powerSaving_idleTimeout_offHours']);
@@ -432,7 +443,7 @@ $xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.
 $xml->powerSaving->officeHours->duration->addAttribute("powerSaving.officeHours.duration.sunday", $general['powerSaving_officeHours_duration_sunday']);
 				
 // Directed Call Pickup
-if(getvalue('feature_directedCallPickup_enabled', $device, $general) == '1')
+if(polycomphones_getvalue('feature_directedCallPickup_enabled', $device, $general) == '1')
 {
 	$xml->call->addAttribute("call.directedCallPickupMethod", "native");
 	$xml->call->addAttribute("call.directedCallPickupString", "");
@@ -443,7 +454,7 @@ else
 }
 
 // MWI Audible Alert
-if(getvalue('se_pat_misc_messageWaiting_inst', $device, $general) == '0')
+if(polycomphones_getvalue('se_pat_misc_messageWaiting_inst', $device, $general) == '0')
 {
 	$xml->se->pat->misc->messageWaiting->addAttribute("se.pat.misc.messageWaiting.inst.1.type", "silenced");
 	$xml->se->pat->misc->messageWaiting->addAttribute("se.pat.misc.messageWaiting.inst.2.type", "silenced");
@@ -469,8 +480,8 @@ if(!empty($general['dir_corp_password']))
 if(!empty($general['exchange_server_url']))
 	$xml->exchange->server->addAttribute("exchange.server.url", $general['exchange_server_url']);
 
-$xml->feature->corporateDirectory->addAttribute("feature.corporateDirectory.enabled", getvalue('feature_corporateDirectory_enabled', $device, $general));
-$xml->feature->exchangeCalendar->addAttribute("feature.exchangeCalendar.enabled", getvalue('feature_exchangeCalendar_enabled', $device, $general));
+$xml->feature->corporateDirectory->addAttribute("feature.corporateDirectory.enabled", polycomphones_getvalue('feature_corporateDirectory_enabled', $device, $general));
+$xml->feature->exchangeCalendar->addAttribute("feature.exchangeCalendar.enabled", polycomphones_getvalue('feature_exchangeCalendar_enabled', $device, $general));
  
 // Xfer VM Button
 $fcc = new featurecode('voicemail', 'directdialvoicemail');
@@ -496,13 +507,13 @@ if($parking_module)
 	
 	// Blind transfer feature code is preferred as using phone transfer will hang up call if slots are filled
 	if($code != '')
-		$xml->softkey->addAttribute("softkey.2.action", getdialpad($code).'$Cp1$'.$parkext.'$Tdtmf$$FDialpadPound$');
+		$xml->softkey->addAttribute("softkey.2.action", polycomphones_get_dialpad($code).'$Cp1$'.$parkext.'$Tdtmf$$FDialpadPound$');
 	// VVX series does not send digits on # so use send call soft key
 	else if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
-		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.getdialpad($parkext).'$FSoftKey1$$Cp3$$Chu$');
+		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.polycomphones_get_dialpad($parkext).'$FSoftKey1$$Cp3$$Chu$');
 	// SoundPoint series will send digits on #
 	else
-		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.getdialpad($parkext).'$FDialpadPound$$Cp3$$Chu$');
+		$xml->softkey->addAttribute("softkey.2.action", '$FTransfer$'.polycomphones_get_dialpad($parkext).'$FDialpadPound$$Cp3$$Chu$');
 	
 	$xml->softkey->addAttribute("softkey.2.enable", '1');
 }
@@ -527,31 +538,6 @@ if(strpos($_SERVER['HTTP_USER_AGENT'], 'PolycomVVX') !== false)
 	$xml->softkey->addAttribute("softkey.4.enable", '1');
 else
 	$xml->softkey->addAttribute("softkey.4.enable", '0');
-
-function getvalue($id, $device, $global)
-{
-	if(isset($device['settings'][$id]) && $device['settings'][$id] != '')
-		return $device['settings'][$id];
-	else
-		return $global[$id];
-}
-
-function getdialpad($num)
-{
-	$action = '';
-	
-	for($i=0; $i<strlen($num); $i++)
-	{
-		if($num[$i] == '*')
-			$action .= '$FDialpadStar$';
-		elseif($num[$i] == '#')
-			$action .= '$FDialpadPound$';
-		else
-			$action .= '$FDialpad'.$num[$i].'$';
-	}
-	
-	return $action;
-}
 
 header("Content-type: application/xml");
 echo $xml->asXML();

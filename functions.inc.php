@@ -147,6 +147,29 @@ function polycomphones_multiple_check()
 	unset($nt);
 }
 
+function polycomphones_clear_overrides($mac = null)
+{
+	global $db, $amp_conf;
+	
+	$path = $amp_conf['AMPWEBROOT'] . '/admin/modules/_polycom_software/overrides/';
+	
+	$contents =
+'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PHONE_CONFIG>
+        <OVERRIDES
+        />
+</PHONE_CONFIG>';
+	
+	$results = sql("SELECT mac FROM polycom_devices
+		" . ($mac != null ? "WHERE mac = '". $db->escapeSimple($mac) . "'" : ""),'getAll',DB_FETCHMODE_ASSOC);
+	
+	foreach($results as $result)
+	{
+		file_put_contents($path . $result['mac'] . '-phone.cfg', $contents);
+		file_put_contents($path . $result['mac'] . '-web.cfg', $contents);
+	}
+}
+
 function polycomphones_lookup_mac($mac)
 {
 	global $db;
@@ -176,13 +199,24 @@ function polycomphones_get_phones_list()
 
 function polycomphones_delete_phones_list($id)
 {
-	global $db;
+	global $db, $amp_conf;
+	
+	$mac = sql("SELECT mac FROM polycom_devices WHERE id = '" . $db->escapeSimple($id) . "'",'getOne');
 	
 	sql("DELETE FROM polycom_devices WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_settings WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_lines WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_line_settings WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_attendants WHERE id = '".$db->escapeSimple($id)."'");
+
+	if(!empty($mac))
+	{
+		$path = $amp_conf['AMPWEBROOT'] . '/admin/modules/_polycom_software/';
+	
+		foreach(array('logs', 'overrides', 'contacts') as $folder)
+			foreach (glob($path . $folder . '/' . $mac . "*") as $filename)
+				unlink($filename);
+	}
 }
 
 function polycomphones_get_phones_edit($id) 
@@ -228,11 +262,13 @@ function polycomphones_save_phones_edit($id, $device)
 {
 	global $db;
 
+	$create = empty($id);
+	
 	if(empty($id))
 	{
 		sql("INSERT INTO polycom_devices (name, mac) 
 			VALUES ('".$db->escapeSimple($device['name'])."','".$db->escapeSimple($device['mac'])."')");
-			
+		
 		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
 	}
 	else
@@ -240,7 +276,7 @@ function polycomphones_save_phones_edit($id, $device)
 				name = '".$db->escapeSimple($device['name'])."',
 				mac = '".$db->escapeSimple($device['mac'])."'
 			WHERE id = '".$db->escapeSimple($id)."'");
-
+	
 	sql("DELETE FROM polycom_device_lines WHERE id = '".$db->escapeSimple($id)."'");
 	sql("DELETE FROM polycom_device_line_settings WHERE id = '".$db->escapeSimple($id)."'");
 	
@@ -276,6 +312,12 @@ function polycomphones_save_phones_edit($id, $device)
 	if(count($entries) > 0)
 		sql("REPLACE INTO polycom_device_settings (id, keyword, value) 
 			VALUES (" . implode('),(', $entries) . ")");
+			
+	if($create)
+	{
+		polycomphones_clear_overrides($device['mac']);
+		polycomphones_save_phones_directory($device['mac'], array());
+	}
 }
 
 function polycomphones_get_phones_directory($mac)
@@ -823,6 +865,31 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Use Defa
 	);
 	
 	return $default ? array(''=>$defaultvalue) + $dropdowns[$id] : $dropdowns[$id];
+}
+
+function polycomphones_getvalue($id, $device, $global)
+{
+	if(isset($device['settings'][$id]) && $device['settings'][$id] != '')
+		return $device['settings'][$id];
+	else
+		return $global[$id];
+}
+
+function polycomphones_get_dialpad($num)
+{
+	$action = '';
+	
+	for($i=0; $i<strlen($num); $i++)
+	{
+		if($num[$i] == '*')
+			$action .= '$FDialpadStar$';
+		elseif($num[$i] == '#')
+			$action .= '$FDialpadPound$';
+		else
+			$action .= '$FDialpad'.$num[$i].'$';
+	}
+	
+	return $action;
 }
 
 ?>

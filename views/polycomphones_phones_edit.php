@@ -29,6 +29,24 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+	// MAC Validate
+	$('input[name="mac"]').keyup(function() {
+		$(this).removeClass("duplicate-exten");
+		$(this).next("span").css("display", "none");
+		var inputVal = $(this).val();
+		var characterReg = /^([a-fA-F0-9]{12})$/;
+		if(!characterReg.test(inputVal)) {
+			$(this).addClass("duplicate-exten");
+			$(this).next("span").css("display", "");
+		}
+	});
+	
+	$("form").submit(function( event ) {
+		if($('input[name="mac"]').hasClass("duplicate-exten")) {
+			event.preventDefault();
+		}
+	});
+
 	// Functions
 	var updateIndex = function(e, ui) {
 		$('td.index', ui.item.parent()).each(function (i) {
@@ -101,6 +119,17 @@ $(document).ready(function() {
 </script>
 
 <form name="polycomphones_phones_edit" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=phones_edit&edit=<?php echo $_GET['edit'];?>">
+<?php 
+if(!empty($_GET['edit'])) { 
+?>
+<input type="button" value="Edit directory" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_directory&edit=<?php echo $device['mac'];?>'" />
+<input type="button" value="Delete phone" title="Delete this phone" onclick="if(confirm('Are you sure you want to delete this phone?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&delete=<?php echo $_GET['edit'];?>'" />
+<input type="button" value="Reboot phone" title="Reboot this phone" onclick="if(confirm('Are you sure you want to reboot this phone?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&checkconfig=<?php echo $_GET['edit'];?>'" />
+<input type="button" value="Clear overrides" title="Clear local setting overrides on this phone" onclick="if(confirm('Are you sure you want to clear local setting overrides on this phone?')) location.href='config.php?type=setup&display=polycomphones&polycomphones_form=phones_list&clearoverrides=<?php echo $device['mac'];?>'" />
+<?php 
+} 
+?>
+
 <table>		
 <tbody>
 	<tr><td colspan="2"><h5><?php echo _("Phone Details")?><hr/></h5></td></tr>	
@@ -110,7 +139,16 @@ $(document).ready(function() {
 	</tr>	
 	<tr>
 		<td><?php echo _("MAC Address")?></td>
-		<td><?php echo form_input('mac', $device['mac'], 'size="15" maxlength="12"'); ?></td>	
+		<?php if(!empty($_GET['edit'])) { ?>
+		<td><?php echo $device['mac'] ?><input type="hidden" name="mac" value="<?php echo $device['mac'] ?>"></td>
+		<?php } else { ?>
+		<td>
+			<?php echo form_input('mac', $device['mac'], 'size="15" maxlength="12"'); ?>
+			<span style="display: none"><a href="#" title="Invalid MAC address">
+				<img src="images/notify_critical.png" />
+			</a></span>
+		</td>	
+		<?php } ?>
 	</tr>	
 	<tr><td colspan="3"><h5><?php echo _("Lines")?><hr/></h5></td></tr>	
 	<tr>
@@ -121,7 +159,7 @@ $(document).ready(function() {
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td><?php echo _("Line")?>*</td>
-				<td><?php echo _("Line Keys")?></td>
+				<td><?php echo _("Line Keys")?><span class="help">?<span style="display: none;">Specify the number of line keys to use for a single registration.</span></span></td>
 				<td><?php echo _("Ring Type")?></td>
 				<td><?php echo _("Missed Call")?>*</td>
 				<td><?php echo _("MWI Callback")?><span class="help">?<span style="display: none;">If 'Disabled', voice message retrieval and notification are disabled.</span></span></td>

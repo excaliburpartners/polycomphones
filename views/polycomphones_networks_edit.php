@@ -57,7 +57,7 @@ $(function(){
 		<td><?php echo form_input('prov_password', $network['settings']['prov_password']); ?></td>
 	</tr>
 	<tr>
-		<td width="175"><?php echo _("Allow Uploads")?><span class="help">?<span style="display: none;">If 'Enabled', the phone will be allowed to upload logs and the contact directory.</span></span></td>
+		<td width="175"><?php echo _("Allow Uploads")?><span class="help">?<span style="display: none;">If 'Enabled', the phone will be allowed to upload logs, overrides, and the contact directory.</span></span></td>
 		<td><?php echo form_dropdown('prov_uploads', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_uploads']); ?></td>
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Options")?><hr/></h5></td></tr>	

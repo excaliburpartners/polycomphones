@@ -25,12 +25,13 @@ switch($_GET['polycomphones_form'])
 		{
 			polycomphones_delete_phones_list($_GET['delete']);
 			polycomphones_multiple_check();
+			
 			redirect_standard('polycomphones_form');
 		}
 		
 		if(isset($_GET['pushcheck']))
 		{
-			if(($failed = polycomphones_push_checkconfig($_GET['edit'])) !== true)
+			if(($failed = polycomphones_push_checkconfig()) !== true)
 				polycomphones_checkconfig($failed);
 			
 			redirect_standard('polycomphones_form');
@@ -38,7 +39,21 @@ switch($_GET['polycomphones_form'])
 		
 		if(isset($_GET['checkconfig']))
 		{
-			polycomphones_checkconfig();
+			polycomphones_checkconfig(!empty($_GET['checkconfig']) ? $_GET['checkconfig'] : null);
+		
+			redirect_standard('polycomphones_form');
+		}
+		
+		if(isset($_GET['clearoverrides']))
+		{
+			$mac = !empty($_GET['clearoverrides']) ? $_GET['clearoverrides'] : null;
+			$id = !empty($_GET['clearoverrides']) ? polycomphones_lookup_mac($mac) : null;
+
+			polycomphones_clear_overrides($mac);
+			
+			if(($failed = polycomphones_push_checkconfig($id)) !== true)
+				polycomphones_checkconfig($failed);
+			
 			redirect_standard('polycomphones_form');
 		}
 		
@@ -98,11 +113,12 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'se_pat_misc_messageWaiting_inst',
 				'up_headsetMode',
 				'up_analogHeadsetOption',
 				'up_useDirectoryNames',
+				'dir_local_readonly',
 				'feature_directedCallPickup_enabled',
-				'se_pat_misc_messageWaiting_inst',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',
@@ -156,6 +172,7 @@ switch($_GET['polycomphones_form'])
 				'bw',
 			);
 			
+			$directory = array();
 			foreach ($fields as $field)
 				foreach($_POST[$field] as $key=>$value)
 				{
@@ -335,6 +352,7 @@ switch($_GET['polycomphones_form'])
 		{
 			$fields = array(
 				'digits',
+				'httpd_cfg_enabled',
 				'mb_main_home',
 				'lineKeys',
 				'ringType',
@@ -345,11 +363,12 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'se_pat_misc_messageWaiting_inst',
 				'up_headsetMode',
 				'up_analogHeadsetOption',
 				'up_useDirectoryNames',
+				'dir_local_readonly',
 				'feature_directedCallPickup_enabled',
-				'se_pat_misc_messageWaiting_inst',
 				'powerSaving_enable',
 				'up_backlight_idleIntensity',
 				'up_backlight_onIntensity',

@@ -10,12 +10,16 @@
 		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Applications Home URL")?></td>
+		<td><?php echo _("Web Config Utility")?>*<span class="help">?<span style="display: none;">If 'Disabled', the Web Configuration Utility is disabled. If 'Enabled', the Web Configuration Utility is enabled.</span></span></td>
+		<td><?php echo form_dropdown('httpd_cfg_enabled', polycomphones_dropdown('disabled_enabled'), $general['httpd_cfg_enabled']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("Applications Home URL")?><span class="help">?<span style="display: none;">The URL of the microbrowser's Home page.</span></span></td>
 		<td><?php echo form_input('mb_main_home', $general['mb_main_home'], 'size="40"'); ?></td>	
 	</tr>
 	<tr><td colspan="2"><h5><?php echo _("Line Default Options")?><hr/></h5></td></tr>			
 	<tr>
-		<td><?php echo _("Line Keys")?></td>
+		<td><?php echo _("Line Keys")?><span class="help">?<span style="display: none;">Specify the number of line keys to use for a single registration.</span></span></td>
 		<td><?php echo form_dropdown('lineKeys', polycomphones_dropdown_numbers(1, 4), $general['lineKeys']); ?></td>	
 	</tr>
 	<tr>

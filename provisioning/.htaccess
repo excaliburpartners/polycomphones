@@ -10,4 +10,7 @@ RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^logs/0004f2(.*).log$ put.php [NC]
 
 RewriteCond %{REQUEST_METHOD} PUT
+RewriteRule ^overrides/0004f2(.*).cfg$ put.php [NC]
+
+RewriteCond %{REQUEST_METHOD} PUT
 RewriteRule ^contacts/0004f2(.*).xml$ put.php [NC]

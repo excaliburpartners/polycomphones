@@ -27,6 +27,10 @@
 			<td><?php echo form_dropdown('call_rejectBusyOnDnd', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['call_rejectBusyOnDnd']); ?></td>	
 		</tr>
 		<tr>
+			<td><?php echo _("MWI Audible Alert")?><span class="help">?<span style="display: none;">If 'Enabled', the audible message waiting alert will be played.</span></span></td>
+			<td><?php echo form_dropdown('se_pat_misc_messageWaiting_inst', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['se_pat_misc_messageWaiting_inst']); ?></td>	
+		</tr>
+		<tr>
 			<td><?php echo _("Headset Mode")?><span class="help">?<span style="display: none;">If 'Disabled', handsfree mode will be used by default instead of the handset. If 'Enabled', the headset will be used as the preferred audio mode after the headset key is pressed for the first time, until the headset key is pressed again.</span></span></td>
 			<td><?php echo form_dropdown('up_headsetMode', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['up_headsetMode']); ?></td>	
 		</tr>
@@ -45,12 +49,12 @@
 			<td><?php echo form_dropdown('up_useDirectoryNames', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['up_useDirectoryNames']); ?></td>	
 		</tr>
 		<tr>
-			<td width="175"><?php echo _("Directed Call Pickup")?>*<span class="help">?<span style="display: none;">If 'Enabled', the directed call pickup feature is enabled.</span></span></td>
-			<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['feature_directedCallPickup_enabled']); ?></td>	
+			<td><?php echo _("Directory Read-Only")?>*<span class="help">?<span style="display: none;">If 'Disabled', the local contact directory can be edited. If 'Enabled', the local contact directory is read-only.</span></span></td>
+			<td><?php echo form_dropdown('dir_local_readonly', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['dir_local_readonly']); ?></td>	
 		</tr>
 		<tr>
-			<td><?php echo _("MWI Audible Alert")?><span class="help">?<span style="display: none;">If 'Enabled', the audible message waiting alert will be played.</span></span></td>
-			<td><?php echo form_dropdown('se_pat_misc_messageWaiting_inst', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['se_pat_misc_messageWaiting_inst']); ?></td>	
+			<td width="175"><?php echo _("Directed Call Pickup")?>*<span class="help">?<span style="display: none;">If 'Enabled', the directed call pickup feature is enabled.</span></span></td>
+			<td><?php echo form_dropdown('feature_directedCallPickup_enabled', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['feature_directedCallPickup_enabled']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Power Saving")?><span class="help">?<span style="display: none;">If 'Enabled', on VVX series phones the LCD display will turn off when not in use.</span></span></td>
