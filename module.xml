@@ -1,0 +1,19 @@
+<module>
+	<rawname>polycomphones</rawname>
+	<repo>standard</repo>
+	<name>Polycom Phones</name>
+	<version>2.11.0.0</version>
+	<publisher>Excalibur Partners, LLC</publisher>
+	<license>GPLv2+</license>
+	<category>Connectivity</category>
+	<menuitems>
+		<polycomphones>Polycom Phones</polycomphones>
+	</menuitems>
+	<description>Adds configurations, options and GUI for Polycom phones</description>
+	<changelog>
+		*2.11.0.0* Initial release for UC software
+	</changelog>
+	<depends>
+		<version>2.11.0</version>
+	</depends>
+</module>

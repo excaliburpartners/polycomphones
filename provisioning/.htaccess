@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteBase /polycom/
+RewriteRule ^exten(.*).cfg$ exten.php?mac=$1
+RewriteRule ^0004f2(.*).cfg$ device.php?mac=0004f2$1 [NC]
