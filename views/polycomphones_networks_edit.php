@@ -43,6 +43,7 @@ $(function(){
 		</td>
 		<?php } ?>
 	</tr>
+	
 	<tr><td colspan="2"><h5><?php echo _("Provisioning")?><hr/></h5></td></tr>
 	<tr>
 		<td width="175"><?php echo _("Require SSL")?><span class="help">?<span style="display: none;">If 'Enabled', an HTTPS url must be used for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: https://voip.domain.com/polycom/</span></span></td>
@@ -60,6 +61,7 @@ $(function(){
 		<td><?php echo _("Allow Uploads")?><span class="help">?<span style="display: none;">If 'Enabled', the phone will be allowed to upload logs, overrides, and the contact directory.</span></span></td>
 		<td><?php echo form_dropdown('prov_uploads', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_uploads']); ?></td>
 	</tr>
+	
 	<tr><td colspan="2"><h5><?php echo _("Options")?><hr/></h5></td></tr>	
 	<tr>
 		<td><?php echo _("Registration Address")?>*<span class="help">?<span style="display: none;">FreePBX server IP or hostname. Example: voip.domain.com</span></span></td>
@@ -84,6 +86,24 @@ $(function(){
 	<tr>
 		<td><?php echo _("Time Zone")?></td>
 		<td><?php echo form_dropdown('tcpIpApp_sntp_gmtOffset', polycomphones_dropdown('tcpIpApp_sntp_gmtOffset', true, ''), $network['settings']['tcpIpApp_sntp_gmtOffset']); ?></td>	
+	</tr>
+	
+	<tr><td colspan="2"><h5><?php echo _("Codec Priority")?><hr/></h5></td></tr>
+	<tr>
+		<td><?php echo _("G.711 U-law")?><span class="help">?<span style="display: none;">Default: 6</span></span></td>
+		<td><?php echo form_dropdown('voice_codecPref_G711_Mu', polycomphones_dropdown_numbers(0, 27), $network['settings']['voice_codecPref_G711_Mu']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("G.711 A-law")?><span class="help">?<span style="display: none;">Default: 7</span></span></td>
+		<td><?php echo form_dropdown('voice_codecPref_G711_A', polycomphones_dropdown_numbers(0, 27), $network['settings']['voice_codecPref_G711_A']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("G.722")?><span class="help">?<span style="display: none;">Default: 4</span></span></td>
+		<td><?php echo form_dropdown('voice_codecPref_G722', polycomphones_dropdown_numbers(0, 27), $network['settings']['voice_codecPref_G722']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("G.729 AB")?><span class="help">?<span style="display: none;">Default: 8</span></span></td>
+		<td><?php echo form_dropdown('voice_codecPref_G729_AB', polycomphones_dropdown_numbers(0, 27), $network['settings']['voice_codecPref_G729_AB']); ?></td>	
 	</tr>
 </tbody>
 </table>

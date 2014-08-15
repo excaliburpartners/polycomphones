@@ -302,10 +302,14 @@ switch($_GET['polycomphones_form'])
 				'prov_uploads',
 				'address',
 				'port',
+				'nat_keepalive_interval',
 				'tcpIpApp_sntp_address',
 				'tcpIpApp_sntp_address_overrideDHCP',
 				'tcpIpApp_sntp_gmtOffset',
-				'nat_keepalive_interval',
+				'voice_codecPref_G711_Mu',
+				'voice_codecPref_G711_A',
+				'voice_codecPref_G722',
+				'voice_codecPref_G729_AB',
 			);
 			
 			foreach ($fields as $field)
@@ -316,6 +320,17 @@ switch($_GET['polycomphones_form'])
 		}
 		
 		$network = polycomphones_get_networks_edit($_GET['edit']);
+
+		if(empty($_GET['edit']))
+		{
+			$network['settings']['prov_uploads'] = '1';
+			$network['settings']['port'] = '5060';
+			$network['settings']['voice_codecPref_G711_Mu'] = '6';
+			$network['settings']['voice_codecPref_G711_A'] = '7';
+			$network['settings']['voice_codecPref_G722'] = '4';
+			$network['settings']['voice_codecPref_G729_AB'] = '8';
+		}		
+		
 		require 'modules/polycomphones/views/polycomphones_networks_edit.php';
 		break;
 	

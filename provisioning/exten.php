@@ -138,6 +138,10 @@ $xml = new SimpleXMLElement(
     <backlight>
     </backlight>
   </up>
+  <voice>
+    <codecPref>
+    </codecPref>
+  </voice>
   <voIpProt>
     <SIP>
       <alertInfo>
@@ -397,7 +401,11 @@ if(!empty($network['settings']['tcpIpApp_sntp_gmtOffset']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset", $network['settings']['tcpIpApp_sntp_gmtOffset']);
 
 $xml->nat->keepalive->addAttribute("nat.keepalive.interval", $network['settings']['nat_keepalive_interval']);
-	
+$xml->voice->codecPref->addAttribute("voice.codecPref.G711_Mu", $network['settings']['voice_codecPref_G711_Mu']);
+$xml->voice->codecPref->addAttribute("voice.codecPref.G711_A", $network['settings']['voice_codecPref_G711_A']);
+$xml->voice->codecPref->addAttribute("voice.codecPref.G722", $network['settings']['voice_codecPref_G722']);
+$xml->voice->codecPref->addAttribute("voice.codecPref.G729_AB", $network['settings']['voice_codecPref_G729_AB']);
+
 // General Settings
 $xml->apps->push->addAttribute("apps.push.password", $general['apps_push_password']);
 $xml->httpd->cfg->addAttribute("httpd.cfg.enabled", $general['httpd_cfg_enabled']);

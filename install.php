@@ -220,6 +220,25 @@ if(DB::IsError($check)) {
 	}
 }
 
+// Add default codec priorities to networks
+$sql = "SELECT id FROM polycom_networks";
+$networks = $db->getAll($sql, DB_FETCHMODE_ASSOC);
+if (DB::IsError($networks)){
+	die_freepbx( "Can not execute $sql : " . $networks->getMessage() .  "\n");
+}
+foreach($networks as $network) {
+	$sql = "INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
+	('" . $network['id'] . "' , 'voice_codecPref_G711_Mu', '6'),
+	('" . $network['id'] . "', 'voice_codecPref_G711_A', '7'),
+	('" . $network['id'] . "', 'voice_codecPref_G722', '4'),
+	('" . $network['id'] . "', 'voice_codecPref_G729_AB', '8');";
+	
+	$check = $db->query($sql);
+	if (DB::IsError($check)){
+		die_freepbx( "Can not execute $sql : " . $check->getMessage() .  "\n");
+	}
+}
+
 define("LOCAL_PATH", $amp_conf['AMPWEBROOT'] . '/admin/modules/polycomphones/');
 define("SOFTWARE_PATH", $amp_conf['AMPWEBROOT'] . '/admin/modules/_polycom_software/');
 define("PROVISIONING_PATH", $amp_conf['AMPWEBROOT'] . '/polycom');
