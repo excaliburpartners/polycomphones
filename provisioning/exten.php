@@ -229,6 +229,7 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
 		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
 		$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+		$xml->reg->addAttribute("reg.$i.server.1.expires", $network['settings']['expiry']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
 		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
 		$xml->reg->addAttribute("reg.$i.ringType", polycomphones_getvalue('ringType', $line, $general));
@@ -266,6 +267,7 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.auth.password", $details['settings']['secret']);
 		$xml->reg->addAttribute("reg.$i.server.1.address", $details['settings']['address']);
 		$xml->reg->addAttribute("reg.$i.server.1.port", $details['settings']['port']);
+		$xml->reg->addAttribute("reg.$i.server.1.expires", $network['settings']['expiry']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", $details['settings']['transport']);
 		$xml->reg->addAttribute("reg.$i.server.1.register", $details['settings']['register']);
 		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
