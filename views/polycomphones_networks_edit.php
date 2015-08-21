@@ -72,7 +72,7 @@ $(function(){
 		<td><?php echo form_input('port', $network['settings']['port'], 'size="10"'); ?></td>
 	</tr>
 	<tr>
-		<td><?php echo _("Registration Expiry")?>*<span class="help">?<span style="display: none;">FreePBX server registration timeout. Example: 3600</span></span></td>
+		<td><?php echo _("Registration Expiry")?>*<span class="help">?<span style="display: none;">FreePBX server registration timeout. Default: 3600</span></span></td>
 		<td><?php echo form_input('expiry', $network['settings']['expiry'], 'size="10"'); ?></td>
 	</tr>
 	<tr>
