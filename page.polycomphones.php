@@ -334,7 +334,7 @@ switch($_GET['polycomphones_form'])
 		{
 			$network['settings']['prov_uploads'] = '1';
 			$network['settings']['port'] = '5060';
-			$network['settings']['port'] = '3600';
+			$network['settings']['expiry'] = '3600';
 			$network['settings']['voice_codecPref_G711_Mu'] = '6';
 			$network['settings']['voice_codecPref_G711_A'] = '7';
 			$network['settings']['voice_codecPref_G722'] = '4';
