@@ -94,6 +94,7 @@ $sql[]="INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
 ('-1', 'prov_uploads', '1'),
 ('-1', 'address', '" . $db->escapeSimple($_SERVER['SERVER_NAME']) . "'),
 ('-1', 'port', '5060'),
+('-1', 'expiry', '5060'),
 ('-1', 'nat_keepalive_interval', '0'),
 ('-1', 'tcpIpApp_sntp_address_overrideDHCP', '0');";
 
