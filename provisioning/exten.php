@@ -78,6 +78,8 @@ $xml = new SimpleXMLElement(
     </corporateDirectory>
     <exchangeCalendar>
     </exchangeCalendar>
+    <nWayConference feature.nWayConference.enabled="1">
+    </nWayConference>
   </feature>
   <httpd>
     <cfg>
@@ -110,7 +112,18 @@ $xml = new SimpleXMLElement(
     </officeHours>
   </powerSaving>
   <se>
+    <saf
+	  saf.2="LoudRing.wav" saf.3="Warble.wav">
+	</saf>
     <pat>
+      <ringer>
+        <ringer15
+		  se.pat.ringer.ringer15.name="Loud Ring" se.pat.ringer.ringer15.inst.1.value="2">
+        </ringer15>
+        <ringer16
+		  se.pat.ringer.ringer16.name="Warble" se.pat.ringer.ringer16.inst.1.value="3">
+        </ringer16>
+      </ringer>
       <misc>
         <messageWaiting>
          </messageWaiting>

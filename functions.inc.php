@@ -844,6 +844,8 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Default'
 		'ringer12' => '12 Ringback-style',
 		'ringer13' => '13 Low Trill Precedence',
 		'ringer14' => '14 Ring Splash',
+		'ringer15' => '15 Loud Ring',
+		'ringer16' => '16 Warble'
 	);
 	
 	$dropdowns['attendantType'] = array(
