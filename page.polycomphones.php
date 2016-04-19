@@ -2,7 +2,7 @@
 if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 
 /*
- * Copyright (C) 2013 Excalibur Partners, LLC (info@excalibur-partners.com)
+ * Copyright (C) 2015 Excalibur Partners, LLC (info@excalibur-partners.com)
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -311,9 +311,11 @@ switch($_GET['polycomphones_form'])
 				'address',
 				'port',
 				'nat_keepalive_interval',
+				'tcpIpApp_sntp_resyncPeriod',
 				'tcpIpApp_sntp_address',
 				'tcpIpApp_sntp_address_overrideDHCP',
 				'tcpIpApp_sntp_gmtOffset',
+				'tcpIpApp_sntp_gmtOffset_overrideDHCP',
 				'voice_codecPref_G711_Mu',
 				'voice_codecPref_G711_A',
 				'voice_codecPref_G722',
@@ -333,6 +335,7 @@ switch($_GET['polycomphones_form'])
 		{
 			$network['settings']['prov_uploads'] = '1';
 			$network['settings']['port'] = '5060';
+			$network['settings']['tcpIpApp_sntp_resyncPeriod'] = '86400';
 			$network['settings']['voice_codecPref_G711_Mu'] = '6';
 			$network['settings']['voice_codecPref_G711_A'] = '7';
 			$network['settings']['voice_codecPref_G722'] = '4';

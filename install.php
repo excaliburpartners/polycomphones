@@ -95,7 +95,9 @@ $sql[]="INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
 ('-1', 'address', '" . $db->escapeSimple($_SERVER['SERVER_NAME']) . "'),
 ('-1', 'port', '5060'),
 ('-1', 'nat_keepalive_interval', '0'),
-('-1', 'tcpIpApp_sntp_address_overrideDHCP', '0');";
+('-1', 'tcpIpApp_sntp_resyncPeriod', '86400'),
+('-1', 'tcpIpApp_sntp_address_overrideDHCP', '0'),
+('-1', 'tcpIpApp_sntp_gmtOffset_overrideDHCP', '0');";
 
 $sql[]='CREATE TABLE IF NOT EXISTS `polycom_devices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -238,7 +240,7 @@ if(DB::IsError($check)) {
 	}
 }
 
-// Add default codec priorities to networks
+// Add NTP settings and default codec priorities to networks
 $sql = "SELECT id FROM polycom_networks";
 $networks = $db->getAll($sql, DB_FETCHMODE_ASSOC);
 if (DB::IsError($networks)){
@@ -246,6 +248,8 @@ if (DB::IsError($networks)){
 }
 foreach($networks as $network) {
 	$sql = "INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
+	('" . $network['id'] . "' , 'tcpIpApp_sntp_resyncPeriod', '86400'),
+	('" . $network['id'] . "' , 'tcpIpApp_sntp_gmtOffset_overrideDHCP', '0'),
 	('" . $network['id'] . "' , 'voice_codecPref_G711_Mu', '6'),
 	('" . $network['id'] . "', 'voice_codecPref_G711_A', '7'),
 	('" . $network['id'] . "', 'voice_codecPref_G722', '4'),
@@ -320,6 +324,11 @@ if(!is_link(PROVISIONING_PATH))
 	if (!symlink(SOFTWARE_PATH, PROVISIONING_PATH)) {
 		out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", web provisioning link not created!</strong>");
 	}
+}
+
+// Allow execution of checkconfig
+if (!chmod(LOCAL_PATH . 'checkconfig', '755')) {
+	out("<strong>Your permissions are wrong on " . $amp_conf['AMPWEBROOT'] . ", unable to set execute permission on checkconfig!</strong>");
 }
 
 ?>

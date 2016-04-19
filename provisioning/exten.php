@@ -201,7 +201,7 @@ foreach($device['lines'] as $line)
 	if($line['deviceid'] != null)
 	{
 		$details = sql('
-		  SELECT d.id, d.user, u.name,
+		  SELECT d.id, d.user, d.devicetype, u.name,
 		    ssecret.data AS pass, stransport.data AS transport
 		  FROM devices AS d
 		  INNER JOIN users AS u
@@ -222,9 +222,22 @@ foreach($device['lines'] as $line)
 			$xml->voIpProt->addAttribute("voIpProt.SIP.local.port", rand(1024, 65535));
 		}
 		
+		// Adhoc device lookup label from asterisk database
+		$label = $details['user'];
+		
+		if($details['devicetype'] == 'adhoc')
+		{
+			// Use CLI, astman is not connected as we assume most devices will be fixed
+			$result = array();
+			exec('asterisk -rx "database get DEVICE '.$details['id'].'/user"', $result);
+			
+			if(strpos($result[0], 'Value: ') !== false)
+				$label = substr($result[0], strlen('Value: '));
+		}
+		
 		$xml->reg->addAttribute("reg.$i.displayName", $details['name']);
 		$xml->reg->addAttribute("reg.$i.address", $details['id']);
-		$xml->reg->addAttribute("reg.$i.label", $details['user']);
+		$xml->reg->addAttribute("reg.$i.label", $label);
 		$xml->reg->addAttribute("reg.$i.auth.userId", $details['id']);
 		$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
 		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
@@ -247,7 +260,7 @@ foreach($device['lines'] as $line)
 		if($exchange_module)
 			$exchangevm = sql("SELECT user FROM exchangeum_users 
 				WHERE user = '" . $db->escapeSimple($details['user']) . "'
-					AND umenabled = 'true'", 'getOne');		
+					AND umenabled <> ''", 'getOne');		
 		
 		$fcc = new featurecode($exchangevm != null ? 'exchangeum' : 'voicemail', 'myvoicemail');
 		$code = $fcc->getCodeActive();
@@ -448,10 +461,13 @@ foreach($alerts as $alert)
 if(!empty($network['settings']['tcpIpApp_sntp_address']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address", $network['settings']['tcpIpApp_sntp_address']);
 
+$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.resyncPeriod", $network['settings']['tcpIpApp_sntp_resyncPeriod']);
 $xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address.overrideDHCP", $network['settings']['tcpIpApp_sntp_address_overrideDHCP']);
-	
+
 if(!empty($network['settings']['tcpIpApp_sntp_gmtOffset']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset", $network['settings']['tcpIpApp_sntp_gmtOffset']);
+
+$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.gmtOffset.overrideDHCP", $network['settings']['tcpIpApp_sntp_gmtOffset_overrideDHCP']);
 
 $xml->nat->keepalive->addAttribute("nat.keepalive.interval", $network['settings']['nat_keepalive_interval']);
 $xml->voice->codecPref->addAttribute("voice.codecPref.G711_Mu", $network['settings']['voice_codecPref_G711_Mu']);

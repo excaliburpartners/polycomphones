@@ -1,0 +1,37 @@
+#!/usr/bin/php
+<?php
+
+if(php_sapi_name() != 'cli')
+{
+	echo "checkconfig must be run from the cli\n";
+	die();
+}
+
+if(count($argv) != 2)
+{
+	echo "Usage: checkconfig deviceid\n";
+	die();
+}
+
+$bootstrap_settings['freepbx_auth'] = false;
+if (!@include_once(getenv('FREEPBX_CONF') ? getenv('FREEPBX_CONF') : '/etc/freepbx.conf')) {
+    include_once('/etc/asterisk/freepbx.conf');
+}
+
+if(($id = polycomphones_lookup_device($argv[1])) == null)
+{
+	echo "Unable to find Polycom phone with that device\n";
+	die();
+}
+
+if(($failed = polycomphones_push_checkconfig($id)) !== true)
+{
+	echo "Sending SIP notify request to reboot phone\n";
+	polycomphones_checkconfig($failed);
+}
+else
+{
+	echo "Successfully sent push request to update config\n";
+}
+
+?>

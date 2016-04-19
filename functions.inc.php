@@ -30,6 +30,32 @@ function polycomphones_configpageload($pagename)
 	}
 }
 
+function polycomphones_hookGet_config($engine) {
+	global $ext, $amp_conf;
+	
+	$modulename = 'core';
+	
+	$fcc = new featurecode($modulename, 'userlogon');
+	$code = $fcc->getCodeActive();
+	unset($fcc);
+
+	$id = "app-userlogonoff";
+	$cmd = $amp_conf['AMPWEBROOT'] . '/admin/modules/polycomphones/checkconfig ${CALLERID(number)}';
+	
+	if($code != '') {
+		$ext->splice($id, $code, 'hook_on_1', new ext_system($cmd));
+		$ext->splice($id, '_'.$code.'.', 'hook_on_2', new ext_system($cmd));
+	}
+	
+	$fcc = new featurecode($modulename, 'userlogoff');
+	$code = $fcc->getCodeActive();
+	unset($fcc);
+
+	if($code != '') {
+		$ext->splice($id, $code, 'hook_off', new ext_system($cmd));
+	}
+}
+
 function polycomphones_get_config($engine) 
 {
     global $db;
@@ -175,6 +201,13 @@ function polycomphones_lookup_mac($mac)
 	global $db;
 	
 	return sql("SELECT id FROM polycom_devices WHERE mac = '" . $db->escapeSimple($mac) . "'",'getOne');
+}
+
+function polycomphones_lookup_device($device)
+{
+	global $db;
+	
+	return sql("SELECT id FROM polycom_device_lines WHERE deviceid = '" . $db->escapeSimple($device) . "'",'getOne');
 }
 
 function polycomphones_get_phones_list() 
@@ -785,6 +818,15 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Default'
 		'-25200' => 'GMT -7:00 Mountain Time',
 		'-21600' => 'GMT -6:00 Central Time',
 		'-18000' => 'GMT -5:00 Eastern Time',
+	);
+	
+	$dropdowns['tcpIpApp_sntp_resyncPeriod'] = array(
+		'3600' => '1 hour',
+		'14400' => '4 hours',
+		'43200' => '12 hours',
+		'86400' => '24 hours',
+		'172800' => '48 hours',
+		'259200' => '72 hours',
 	);
 	
 	$dropdowns['ringType'] = array(

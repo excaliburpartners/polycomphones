@@ -76,16 +76,24 @@ $(function(){
 		<td><?php echo form_dropdown('nat_keepalive_interval', polycomphones_dropdown('nat_keepalive_interval'),  $network['settings']['nat_keepalive_interval']); ?></td>
 	</tr>
 	<tr>
+		<td><?php echo _("NTP Resync Period")?><span class="help">?<span style="display: none;">The period of time that passes before the phone resynchronizes with the SNTP server.</span></span></td>
+		<td><?php echo form_dropdown('tcpIpApp_sntp_resyncPeriod', polycomphones_dropdown('tcpIpApp_sntp_resyncPeriod'), $network['settings']['tcpIpApp_sntp_resyncPeriod']); ?></td>	
+	</tr>
+	<tr>
 		<td><?php echo _("NTP Server")?><span class="help">?<span style="display: none;">Example: pool.ntp.org</span></span></td>
 		<td><?php echo form_input('tcpIpApp_sntp_address', $network['settings']['tcpIpApp_sntp_address']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("NTP Override DHCP")?><span class="help">?<span style="display: none;">If 'Disabled', the DHCP values for the NTP server address will be used. If 'Enabled', the NTP parameters will override the DHCP values.</span></span></td>
+		<td><?php echo _("NTP Override")?><span class="help">?<span style="display: none;">If 'Disabled', the DHCP values for the NTP server address will be used. If 'Enabled', the configured value will override the DHCP values.</span></span></td>
 		<td><?php echo form_dropdown('tcpIpApp_sntp_address_overrideDHCP', polycomphones_dropdown('disabled_enabled'), $network['settings']['tcpIpApp_sntp_address_overrideDHCP']); ?></td>	
 	</tr>
 	<tr>
 		<td><?php echo _("Time Zone")?></td>
 		<td><?php echo form_dropdown('tcpIpApp_sntp_gmtOffset', polycomphones_dropdown('tcpIpApp_sntp_gmtOffset', true, ''), $network['settings']['tcpIpApp_sntp_gmtOffset']); ?></td>	
+	</tr>
+	<tr>
+		<td><?php echo _("Time Zone Override")?><span class="help">?<span style="display: none;">If 'Disabled', the DHCP values for the GMT offset will be used. If 'Enabled', the configured value will override the DHCP values.</span></span></td>
+		<td><?php echo form_dropdown('tcpIpApp_sntp_gmtOffset_overrideDHCP', polycomphones_dropdown('disabled_enabled'), $network['settings']['tcpIpApp_sntp_gmtOffset_overrideDHCP']); ?></td>	
 	</tr>
 	
 	<tr><td colspan="2"><h5><?php echo _("Codec Priority")?><hr/></h5></td></tr>
