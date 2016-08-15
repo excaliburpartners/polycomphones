@@ -27,6 +27,10 @@
 			<td><?php echo _("Reject Busy on DND")?>*<span class="help">?<span style="display: none;">If 'Enabled', and DND is turned on, the phone rejects incoming calls with a busy signal. If 'Disabled', and DND is turned on, the phone gives a visual alert of incoming calls and no audio ringtone alert.</span></span></td>
 			<td><?php echo form_dropdown('call_rejectBusyOnDnd', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['call_rejectBusyOnDnd']); ?></td>	
 		</tr>
+		<tr>
+			<td><?php echo _("Missed Calls Add to List")?><span class="help">?<span style="display: none;">If 'Enabled', calls answered from the remote phone are added to the local receive call list.</span></span></td>
+			<td><?php echo form_dropdown('call_advancedMissedCalls_addToReceivedList', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['call_advancedMissedCalls_addToReceivedList']); ?></td>	
+		</tr>
 		
 		<tr><td colspan="2"><h5><?php echo _("Directory")?><hr/></h5></td></tr>
 		<tr>

@@ -2,7 +2,7 @@
 	<rawname>polycomphones</rawname>
 	<repo>standard</repo>
 	<name>Polycom Phones</name>
-	<version>2.11.0.12</version>
+	<version>2.11.0.13</version>
 	<publisher>Excalibur Partners, LLC</publisher>
 	<license>GPLv2+</license>
 	<category>Connectivity</category>
@@ -11,6 +11,7 @@
 	</menuitems>
 	<description>Adds configurations, options and GUI for Polycom phones</description>
 	<changelog>
+		*2.11.0.13* Adds device password options, support for new Polycom MACs, and compatibility for FreePBX 13
 		*2.11.0.12* Adds loud ringer option and enables n-way conference
 		*2.11.0.11* Adds NTP options and phone display update on adhoc login
 		*2.11.0.10* Adds integration with phone features module

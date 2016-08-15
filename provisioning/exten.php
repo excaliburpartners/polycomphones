@@ -16,6 +16,10 @@ $xml = new SimpleXMLElement(
 '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- Per-phone Configuration File -->
 <polycomConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="polycomConfig.xsd">
+  <device device.set="1">
+    <auth device.auth.localUserPassword.set="1" device.auth.localAdminPassword.set="1">
+	</auth>
+  </device>
   <reg>
   </reg>
   <attendant>
@@ -33,6 +37,8 @@ $xml = new SimpleXMLElement(
     </ucdesktop>
   </apps>
   <call>
+    <advancedMissedCalls>
+	</advancedMissedCalls>
     <missedCallTracking>
     </missedCallTracking>
     <callWaiting>
@@ -501,11 +507,15 @@ $xml->dialplan->addAttribute("dialplan.digitmap", "*x.T|**[1-9]".$digits."|[2-9]
 if(!empty($general['mb_main_home']))
 	$xml->mb->main->addAttribute("mb.main.home", $general['mb_main_home']);
 
+$xml->device->auth->addAttribute("device.auth.localUserPassword", $general['device_auth_localUserPassword']);
+$xml->device->auth->addAttribute("device.auth.localAdminPassword", $general['device_auth_localAdminPassword']);
+	
 $xml->softkey->feature->basicCallManagement->addAttribute("softkey.feature.basicCallManagement.redundant", polycomphones_getvalue('softkey_feature_basicCallManagement_redundant', $device, $general));
 $xml->call->callWaiting->addAttribute("call.transfer.blindPreferred", polycomphones_getvalue('call_transfer_blindPreferred', $device, $general));
 $xml->call->callWaiting->addAttribute("call.callWaiting.ring", polycomphones_getvalue('call_callWaiting_ring', $device, $general));
 $xml->call->hold->localReminder->addAttribute("call.hold.localReminder.enabled", polycomphones_getvalue('call_hold_localReminder_enabled', $device, $general));
 $xml->call->addAttribute("call.rejectBusyOnDnd", polycomphones_getvalue('call_rejectBusyOnDnd', $device, $general));
+$xml->call->advancedMissedCalls->addAttribute("call.advancedMissedCalls.addToReceivedList", polycomphones_getvalue('call_advancedMissedCalls_addToReceivedList', $device, $general));
 $xml->up->addAttribute("up.headsetMode", polycomphones_getvalue('up_headsetMode', $device, $general));
 $xml->up->addAttribute("up.analogHeadsetOption", polycomphones_getvalue('up_analogHeadsetOption', $device, $general));
 $xml->up->addAttribute("up.useDirectoryNames", polycomphones_getvalue('up_useDirectoryNames', $device, $general));

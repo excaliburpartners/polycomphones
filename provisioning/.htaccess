@@ -4,13 +4,13 @@ RewriteEngine on
 RewriteBase /polycom/
 
 RewriteRule ^exten(.*).cfg$ exten.php?mac=$1
-RewriteRule ^0004f2(.*).cfg$ device.php?mac=0004f2$1 [NC]
+RewriteRule ^([a-f0-9]{12}).cfg$ device.php?mac=$1 [NC]
 
 RewriteCond %{REQUEST_METHOD} PUT
-RewriteRule ^logs/0004f2(.*).log$ put.php [NC]
+RewriteRule ^logs/(.*).log$ put.php [NC]
 
 RewriteCond %{REQUEST_METHOD} PUT
-RewriteRule ^overrides/0004f2(.*).cfg$ put.php [NC]
+RewriteRule ^overrides/(.*).cfg$ put.php [NC]
 
 RewriteCond %{REQUEST_METHOD} PUT
-RewriteRule ^contacts/0004f2(.*).xml$ put.php [NC]
+RewriteRule ^contacts/(.*).xml$ put.php [NC]

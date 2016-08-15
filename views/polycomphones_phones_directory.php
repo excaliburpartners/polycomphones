@@ -33,7 +33,7 @@ $(document).ready(function() {
 
 	// Cotnact
 	$(".addcontact").on("click",function() {
-		$("#directory").append('<?php echo json_encode($newcontact); ?>');
+		$("#directory").append(<?php echo json_encode($newcontact); ?>);
 		tableIndex($("#directory"));
 	});
 

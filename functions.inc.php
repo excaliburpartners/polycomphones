@@ -127,8 +127,10 @@ function polycomphones_push($ip, $xml)
 
 	$ch = curl_init();
 	
-	curl_setopt($ch, CURLOPT_URL, 'http://'.$ip.'/push');
+	curl_setopt($ch, CURLOPT_URL, 'https://'.$ip.'/push');
 	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
     curl_setopt($ch, CURLOPT_USERPWD, 'Polycom:' . $password);
@@ -263,6 +265,7 @@ function polycomphones_get_phones_edit($id)
 		WHERE id = \"{$db->escapeSimple($id)}\"
 		ORDER BY lineid",'getAll',DB_FETCHMODE_ASSOC);
 	
+	$device['lines'] = array();
 	foreach($lines as $line)
 		$device['lines'][$line['lineid']] = $line;
 	
@@ -279,6 +282,7 @@ function polycomphones_get_phones_edit($id)
 		WHERE id = \"{$db->escapeSimple($id)}\"
 		ORDER BY attendantid",'getAll',DB_FETCHMODE_ASSOC);
 	
+	$device['attendants'] = array();
 	foreach($attendants as $attendant)
 		$device['attendants'][$attendant['attendantid']] = $attendant;
 

@@ -67,47 +67,58 @@ switch($_GET['polycomphones_form'])
 			$device['name'] = $_POST['name'];
 			$device['mac'] = strtolower($_POST['mac']);
 			
-			foreach($_POST['line'] as $key=>$value)
-			{	
-				$key++;
-				$device['lines'][$key]['deviceid'] = null;
-				$device['lines'][$key]['externalid'] = null;
+			$device['lines'] = array();
 			
-				if(strpos($value, 'freepbx_') === 0)
-					$device['lines'][$key]['deviceid'] = substr($value, 8);
-				elseif(strpos($value, 'external_') === 0)
-					$device['lines'][$key]['externalid'] = substr($value, 9);
-			}
-
-			$fields = array(
-				'lineKeys',
-				'ringType',
-				'missedCallTracking',
-				'callBackMode',
-				'serverFeatureControl_dnd',
-				'serverFeatureControl_cf',
-			);
-			
-			foreach ($fields as $field)
-				foreach($_POST[$field] as $key=>$value)
-				{
+			if(isset($_POST['line']))
+			{
+				foreach($_POST['line'] as $key=>$value)
+				{	
 					$key++;
-					if($device['lines'][$key])
-						$device['lines'][$key]['settings'][$field] = $value;
-				}
+					$device['lines'][$key]['deviceid'] = null;
+					$device['lines'][$key]['externalid'] = null;
 				
-			foreach($_POST['attendant'] as $key=>$value)
-			{	
-				$key++;
-			
-				if(($pos = strpos($value, '_')) !== false)
+					if(strpos($value, 'freepbx_') === 0)
+						$device['lines'][$key]['deviceid'] = substr($value, 8);
+					elseif(strpos($value, 'external_') === 0)
+						$device['lines'][$key]['externalid'] = substr($value, 9);
+				}
+
+				$fields = array(
+					'lineKeys',
+					'ringType',
+					'missedCallTracking',
+					'callBackMode',
+					'serverFeatureControl_dnd',
+					'serverFeatureControl_cf',
+				);
+				
+				foreach ($fields as $field)
 				{
-					$device['attendants'][$key]['keyword'] = substr($value, 0, $pos);
-					$device['attendants'][$key]['value'] = substr($value, $pos + 1);
+					foreach($_POST[$field] as $key=>$value)
+					{
+						$key++;
+						if($device['lines'][$key])
+							$device['lines'][$key]['settings'][$field] = $value;
+					}
 				}
+			}
+			
+			$device['attendants'] = array();
+			if(isset($_POST['attendant']))
+			{
+				foreach($_POST['attendant'] as $key=>$value)
+				{	
+					$key++;
 				
-				$device['attendants'][$key]['label'] = $_POST['label'][$key-1];
-				$device['attendants'][$key]['type'] = $_POST['type'][$key-1];
+					if(($pos = strpos($value, '_')) !== false)
+					{
+						$device['attendants'][$key]['keyword'] = substr($value, 0, $pos);
+						$device['attendants'][$key]['value'] = substr($value, $pos + 1);
+					}
+					
+					$device['attendants'][$key]['label'] = $_POST['label'][$key-1];
+					$device['attendants'][$key]['type'] = $_POST['type'][$key-1];
+				}
 			}
 
 			$fields = array(
@@ -121,6 +132,7 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'call_advancedMissedCalls_addToReceivedList',
 				'up_useDirectoryNames',
 				'dir_local_readonly',
 				'se_pat_misc_messageWaiting_inst',
@@ -185,19 +197,24 @@ switch($_GET['polycomphones_form'])
 			);
 			
 			$directory = array();
-			foreach ($fields as $field)
-				foreach($_POST[$field] as $key=>$value)
+			if(isset($_POST[$fields[0]]))
+			{
+				foreach ($fields as $field)
 				{
-					$key++;
-					
-					if($field == 'sd')
-						$directory[$key][$field] = $value == '1' ? $key : '';
-					elseif($field =='rt' && $value == '')
-						$directory[$key][$field] = 'default';
-					else
-						$directory[$key][$field] = $value;
+					foreach($_POST[$field] as $key=>$value)
+					{
+						$key++;
+						
+						if($field == 'sd')
+							$directory[$key][$field] = $value == '1' ? $key : '';
+						elseif($field =='rt' && $value == '')
+							$directory[$key][$field] = 'default';
+						else
+							$directory[$key][$field] = $value;
+					}
 				}
-		
+			}
+			
 			polycomphones_save_phones_directory($_GET['edit'], $directory);
 			
 			// Use SIP notify to reboot phone
@@ -384,6 +401,8 @@ switch($_GET['polycomphones_form'])
 				'digits',
 				'httpd_cfg_enabled',
 				'mb_main_home',
+				'device_auth_localUserPassword',
+				'device_auth_localAdminPassword',
 				'lineKeys',
 				'ringType',
 				'missedCallTracking',
@@ -395,6 +414,7 @@ switch($_GET['polycomphones_form'])
 				'call_callWaiting_ring',
 				'call_hold_localReminder_enabled',
 				'call_rejectBusyOnDnd',
+				'call_advancedMissedCalls_addToReceivedList',
 				'up_useDirectoryNames',
 				'dir_local_readonly',
 				'se_pat_misc_messageWaiting_inst',

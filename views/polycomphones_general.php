@@ -18,6 +18,16 @@
 		<td><?php echo form_input('mb_main_home', $general['mb_main_home'], 'size="40"'); ?></td>	
 	</tr>
 	
+	<tr><td colspan="2"><h5><?php echo _("Device Options")?><hr/></h5></td></tr>
+	<tr>
+		<td width="175"><?php echo _("User Password")?><span class="help">?<span style="display: none;">The phone’s local user password.</span></span></td>
+		<td><?php echo form_input('device_auth_localUserPassword', $general['device_auth_localUserPassword'], 'size="20"'); ?></td>
+	</tr>
+	<tr>
+		<td width="175"><?php echo _("Admin Password")?><span class="help">?<span style="display: none;">The phone’s local administrative password.</span></span></td>
+		<td><?php echo form_input('device_auth_localAdminPassword', $general['device_auth_localAdminPassword'], 'size="20"'); ?></td>
+	</tr>
+	
 	<tr><td colspan="2"><h5><?php echo _("Line Default Options")?><hr/></h5></td></tr>			
 	<tr>
 		<td><?php echo _("Line Keys")?><span class="help">?<span style="display: none;">Specify the number of line keys to use for a single registration.</span></span></td>
