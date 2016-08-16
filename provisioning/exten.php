@@ -29,6 +29,8 @@ $xml = new SimpleXMLElement(
         </spontaneousCallAppearances>
       </display>
     </behaviors>
+	<ringType>
+	</ringType>
   </attendant>
   <apps>
     <push apps.push.messageType="5" apps.push.username="Polycom">

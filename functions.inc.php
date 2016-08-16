@@ -586,7 +586,7 @@ function polycomphones_save_networks_edit($id, $network)
 
 function polycomphones_cidr_ip_check ($ip, $cidr) 
 {
-	list ($net, $mask) = split ("/", $cidr);
+	list ($net, $mask) = explode ("/", $cidr);
 	
 	$ip_net = ip2long ($net);
 	$ip_mask = ~((1 << (32 - $mask)) - 1);
