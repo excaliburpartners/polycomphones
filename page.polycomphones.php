@@ -322,11 +322,19 @@ switch($_GET['polycomphones_form'])
 			
 			$fields = array(
 				'prov_ssl',
+				'prov_check_agent',
 				'prov_username',
 				'prov_password',
 				'prov_uploads',
+				'device_dhcp_bootSrvUseOpt',
+				'device_dhcp_bootSrvOpt',
+				'device_prov_serverType',
+				'device_prov_serverName',
+				'device_prov_user',
+				'device_prov_password',
 				'address',
 				'port',
+				'expires',
 				'nat_keepalive_interval',
 				'tcpIpApp_sntp_resyncPeriod',
 				'tcpIpApp_sntp_address',
@@ -350,8 +358,10 @@ switch($_GET['polycomphones_form'])
 
 		if(empty($_GET['edit']))
 		{
+			$network['settings']['prov_check_agent'] = '1';
 			$network['settings']['prov_uploads'] = '1';
 			$network['settings']['port'] = '5060';
+			$network['settings']['expires'] = '5060';
 			$network['settings']['tcpIpApp_sntp_resyncPeriod'] = '86400';
 			$network['settings']['voice_codecPref_G711_Mu'] = '6';
 			$network['settings']['voice_codecPref_G711_A'] = '7';

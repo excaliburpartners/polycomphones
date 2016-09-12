@@ -43,7 +43,8 @@ foreach ($devices as $device) {
 		<?php echo $device['name'] ?>
 	</td>
 	<td>
-		<?php echo $device['mac']?>
+		<?php echo $device['mac']?><br />
+		<?php echo $device['version'] ?>
 	</td>
 	<td>
 		<?php

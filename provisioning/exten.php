@@ -19,6 +19,8 @@ $xml = new SimpleXMLElement(
   <device device.set="1">
     <auth device.auth.localUserPassword.set="1" device.auth.localAdminPassword.set="1">
 	</auth>
+	<prov>
+	</prov>
   </device>
   <reg>
   </reg>
@@ -180,18 +182,19 @@ $id = polycomphones_lookup_mac($_GET['mac']);
 $polycom_request = strpos($_SERVER['HTTP_USER_AGENT'], 'Polycom') !== false;
 
 if($id == null && !$polycom_request)
-	die();
+	polycomphones_send_error('403 Forbidden', 'Access is denied');
 
 if($polycom_request)
 {
 	$matches = array();
-	preg_match('/FileTransport Polycom([^\/.]*)/', $_SERVER['HTTP_USER_AGENT'], $matches);
+	preg_match('/FileTransport Polycom([^\/.]+)\/([\w\.]+)/', $_SERVER['HTTP_USER_AGENT'], $matches);
 	
 	if($id == null)
 	{
-		sql("INSERT INTO polycom_devices (name, mac, model, lastconfig, lastip) 
+		sql("INSERT INTO polycom_devices (name, mac, model, version, lastconfig, lastip) 
 			VALUES ('Auto Added','" . $db->escapeSimple($_GET['mac']) . "','" . 
-			$db->escapeSimple($matches[1]) . "',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
+			$db->escapeSimple($matches[1]) .  "','" . $db->escapeSimple($matches[2]) .
+			"',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
 			
 		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
 		
@@ -199,13 +202,19 @@ if($polycom_request)
 		polycomphones_save_phones_directory($_GET['mac'], array());
 	}
 	else
-		sql("UPDATE polycom_devices SET lastconfig = NOW(), 
-			model = '" . $db->escapeSimple($matches[1]) . "',
-			lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
+		sql("UPDATE polycom_devices SET 
+				lastconfig = NOW(), 
+				model = '" . $db->escapeSimple($matches[1]) . "',
+				version = '" . $db->escapeSimple($matches[2]) . "',
+				lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
 			WHERE id = '" . $db->escapeSimple($id) . "'");
 }
 
 $device = polycomphones_get_phones_edit($id);
+
+if($network['settings']['prov_check_agent'] == '1' && strpos($_SERVER['HTTP_USER_AGENT'], $device['model']) === false)
+	polycomphones_send_error('403 Forbidden', 'Access is denied');
+
 $alerts = polycomphones_get_alertinfo_list();
 $general = polycomphones_get_general_edit();
 $exchange_module = polycomphones_check_module('exchangeum');
@@ -263,6 +272,7 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
 		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
 		$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+		$xml->reg->addAttribute("reg.$i.server.1.expires", $network['settings']['expires']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
 		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
 		$xml->reg->addAttribute("reg.$i.ringType", polycomphones_getvalue('ringType', $line, $general));
@@ -479,6 +489,42 @@ foreach($alerts as $alert)
 }
 
 // Network Settings
+if(!empty($network['settings']['device_dhcp_bootSrvUseOpt']))
+{
+	$xml->device->prov->addAttribute("device.dhcp.bootSrvUseOpt", $network['settings']['device_dhcp_bootSrvUseOpt']);
+	$xml->device->prov->addAttribute("device.dhcp.bootSrvUseOpt.set", '1');
+}
+
+if(!empty($network['settings']['device_dhcp_bootSrvOpt']))
+{
+	$xml->device->prov->addAttribute("device.dhcp.bootSrvOpt", $network['settings']['device_dhcp_bootSrvOpt']);
+	$xml->device->prov->addAttribute("device.dhcp.bootSrvOpt.set", '1');
+}
+
+if(!empty($network['settings']['device_prov_serverType']))
+{
+	$xml->device->prov->addAttribute("device.prov.serverType", $network['settings']['device_prov_serverType']);
+	$xml->device->prov->addAttribute("device.prov.serverType.set", '1');
+}
+
+if(!empty($network['settings']['device_prov_serverName']))
+{
+	$xml->device->prov->addAttribute("device.prov.serverName", $network['settings']['device_prov_serverName']);
+	$xml->device->prov->addAttribute("device.prov.serverName.set", '1');
+}
+
+if(!empty($network['settings']['device_prov_user']))
+{
+	$xml->device->prov->addAttribute("device.prov.user", $network['settings']['device_prov_user']);
+	$xml->device->prov->addAttribute("device.prov.user.set", '1');
+}
+
+if(!empty($network['settings']['device_prov_password']))
+{
+	$xml->device->prov->addAttribute("device.prov.password", $network['settings']['device_prov_password']);
+	$xml->device->prov->addAttribute("device.prov.password.set", '1');
+}
+
 if(!empty($network['settings']['tcpIpApp_sntp_address']))
 	$xml->tcpIpApp->sntp->addAttribute("tcpIpApp.sntp.address", $network['settings']['tcpIpApp_sntp_address']);
 

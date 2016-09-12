@@ -206,6 +206,12 @@ if(!empty($_GET['edit'])) {
 				<td><?php echo _("Last IP")?></td>
 				<td><?php echo $device['lastip'] ?></td>	
 			</tr>
+			<tr>
+				<td><?php echo _("Version")?></td>
+				<td><?php echo $device['version'] ?></td>	
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>	
+			</tr>
 		</table>
 		</td>
 	</tr>

@@ -216,7 +216,7 @@ function polycomphones_get_phones_list()
 {
 	global $db;
 	
-	$results = sql("SELECT id, name, mac, model, lastconfig, lastip
+	$results = sql("SELECT id, name, mac, model, version, lastconfig, lastip
 		FROM polycom_devices
 		ORDER BY mac",'getAll',DB_FETCHMODE_ASSOC);
 	
@@ -258,7 +258,7 @@ function polycomphones_get_phones_edit($id)
 {
 	global $db;
 	
-	$device = sql("SELECT name, mac, model, lastconfig, lastip FROM polycom_devices
+	$device = sql("SELECT name, mac, model, version, lastconfig, lastip FROM polycom_devices
 		WHERE id = \"{$db->escapeSimple($id)}\"",'getRow',DB_FETCHMODE_ASSOC);
 	
 	$lines = sql("SELECT lineid, deviceid, externalid FROM polycom_device_lines 
@@ -619,15 +619,30 @@ function polycomphones_check_network($network)
 	
 	if(empty($network['settings']['prov_username']))
 		return;
-
-	if (!isset($_SERVER['PHP_AUTH_USER']) || !(
-		$network['settings']['prov_username'] == $_SERVER['PHP_AUTH_USER'] &&
-		$network['settings']['prov_password'] == $_SERVER['PHP_AUTH_PW']))
+	
+	if (!isset($_SERVER['PHP_AUTH_USER']))
+		polycomphone_send_unauthorized();
+	
+	$users = explode('|', $network['settings']['prov_username']);
+	$passwords = explode('|', $network['settings']['prov_password']);
+	
+	if(count($users) != count($passwords))
+		polycomphone_send_unauthorized();
+	
+	for($i=0;$i<count($users);$i++)
 	{
-		header('WWW-Authenticate: Basic realm="Authentication Required"');
-		header('HTTP/1.0 401 Unauthorized');
-		polycomphones_send_error('401 Unathorized', 'Authentication is required to view this page.');
+		if($users[$i] == $_SERVER['PHP_AUTH_USER'] && $passwords[$i] == $_SERVER['PHP_AUTH_PW'])
+			return;
 	}
+	
+	polycomphone_send_unauthorized();
+}
+
+function polycomphone_send_unauthorized()
+{
+	header('WWW-Authenticate: Basic realm="Authentication Required"');
+	header('HTTP/1.0 401 Unauthorized');
+	polycomphones_send_error('401 Unathorized', 'Authentication is required to view this page.');
 }
 
 function polycomphones_send_error($title, $message)
@@ -815,6 +830,18 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Default'
 	$dropdowns['client_server'] = array(
 		'0' => 'Client',
 		'1' => 'Server',
+	);
+	
+	$dropdowns['protocol'] = array(
+		'HTTP' => 'HTTP',
+		'HTTPS' => 'HTTPS',
+	);
+	
+	$dropdowns['device_dhcp_bootSrvUseOpt'] = array(
+		'Default' => 'Opt.66',
+		'Custom' => 'Custom',
+		'Static' => 'Static',
+		'CustomAndDefault' => 'Custom+Opt.66',
 	);
 	
 	$dropdowns['tcpIpApp_sntp_gmtOffset'] = array(

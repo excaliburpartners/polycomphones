@@ -27,7 +27,7 @@ $(function(){
 <tbody>	
 	<tr><td colspan="2"><h5><?php echo _("Network")?><hr/></h5></td></tr>	
 	<tr>
-		<td width="175"><?php echo _("Name")?></td>
+		<td width="195"><?php echo _("Name")?></td>
 		<td><?php echo form_input('name', $network['name']); ?></td>
 	</tr>
 	<tr>
@@ -46,20 +46,50 @@ $(function(){
 	
 	<tr><td colspan="2"><h5><?php echo _("Provisioning")?><hr/></h5></td></tr>
 	<tr>
-		<td width="175"><?php echo _("Require SSL")?><span class="help">?<span style="display: none;">If 'Enabled', an HTTPS url must be used for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: https://voip.domain.com/polycom/</span></span></td>
+		<td><?php echo _("Require SSL")?><span class="help">?<span style="display: none;">If 'Enabled', an HTTPS url must be used for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: https://voip.domain.com/polycom/</span></span></td>
 		<td><?php echo form_dropdown('prov_ssl', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_ssl']); ?></td>
 	</tr>
 	<tr>
-		<td><?php echo _("Username")?><span class="help">?<span style="display: none;">If a username is provided authentication will be required for phone provisioning. DHCP or phone provisioning server settings must be configured to match.<br />DHCP Option 160: http://username:password@voip.domain.com/polycom/<br />Default: PlcmSpIp</span></span></td>
+		<td><?php echo _("Check User Agent")?><span class="help">?<span style="display: none;">If 'Enabled', check the phone model against the user agent for enhanced security.</span></span></td>
+		<td><?php echo form_dropdown('prov_check_agent', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_check_agent']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Username")?><span class="help">?<span style="display: none;">If a username is provided authentication will be required for phone provisioning. DHCP or phone provisioning server settings must be configured to match. Multiple usernames to be accepted should be delimited by |.<br />DHCP Option 160: http://username:password@voip.domain.com/polycom/<br />Default: PlcmSpIp</span></span></td>
 		<td><?php echo form_input('prov_username', $network['settings']['prov_username']); ?></td>
 	</tr>
 	<tr>
-		<td><?php echo _("Password")?><span class="help">?<span style="display: none;">Password to use in combination with the username.<br />Default: PlcmSpIp</span></span></td>
+		<td><?php echo _("Password")?><span class="help">?<span style="display: none;">Password to use in combination with the username. Multiple passwords to be accepted should be delimited by |.<br />Default: PlcmSpIp</span></span></td>
 		<td><?php echo form_input('prov_password', $network['settings']['prov_password']); ?></td>
 	</tr>
 	<tr>
 		<td><?php echo _("Allow Uploads")?><span class="help">?<span style="display: none;">If 'Enabled', the phone will be allowed to upload logs, overrides, and the contact directory.</span></span></td>
 		<td><?php echo form_dropdown('prov_uploads', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_uploads']); ?></td>
+	</tr>
+	
+	<tr><td colspan="2"><h5><?php echo _("Update Settings")?><hr/></h5></td></tr>
+	<tr>
+		<td><?php echo _("Boot Server")?><span class="help">?<span style="display: none;">If selected the DHCP option for provisioning will be updated on the phone.</span></span></td>
+		<td><?php echo form_dropdown('device_dhcp_bootSrvUseOpt', polycomphones_dropdown('device_dhcp_bootSrvUseOpt', true, ''), $network['settings']['device_dhcp_bootSrvUseOpt']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Boot Server Opt")?><span class="help">?<span style="display: none;">If provided the numeric DHCP option for provisioning will be updated on the phone.<br />Example: 160</span></span></td>
+		<td><?php echo form_input('device_dhcp_bootSrvOpt', $network['settings']['device_dhcp_bootSrvOpt']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Provisioning Server Type")?><span class="help">?<span style="display: none;">If selected the server type for provisioning will be update on the phone.</span></span></td>
+		<td><?php echo form_dropdown('device_prov_serverType', polycomphones_dropdown('protocol', true, ''), $network['settings']['device_prov_serverType']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Provisioning Server Name")?><span class="help">?<span style="display: none;">If provided the server name for provisioning will be updated on the phone.<br />Example: voip.domain.com/polycom</span></span></td>
+		<td><?php echo form_input('device_prov_serverName', $network['settings']['device_prov_serverName']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Provisioning Username")?><span class="help">?<span style="display: none;">If provided the user name for provisioning will be updated on the phone.</span></span></td>
+		<td><?php echo form_input('device_prov_user', $network['settings']['device_prov_user']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Provisioning Password")?><span class="help">?<span style="display: none;">If provided the password for provisioning will be updated on the phone.</span></span></td>
+		<td><?php echo form_input('device_prov_password', $network['settings']['device_prov_password']); ?></td>
 	</tr>
 	
 	<tr><td colspan="2"><h5><?php echo _("Options")?><hr/></h5></td></tr>	
@@ -70,6 +100,10 @@ $(function(){
 	<tr>
 		<td><?php echo _("Registration Port")?>*<span class="help">?<span style="display: none;">FreePBX server SIP port. Example: 5060</span></span></td>
 		<td><?php echo form_input('port', $network['settings']['port'], 'size="10"'); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Registration Expiry")?>*<span class="help">?<span style="display: none;">Sets the requested registration period in seconds. Default: 3600</span></span></td>
+		<td><?php echo form_input('expires', $network['settings']['expires'], 'size="10"'); ?></td>
 	</tr>
 	<tr>
 		<td><?php echo _("NAT Keepalive Interval")?><span class="help">?<span style="display: none;">Sets the interval at which phones will send a keep-alive packet to the gateway/NAT device to keep the communication port open.</span></span></td>

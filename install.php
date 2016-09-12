@@ -92,11 +92,13 @@ WHERE keyword IN ('address', 'port', 'tcpIpApp_sntp_address', 'tcpIpApp_sntp_gmt
 
 $sql[]="INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
 ('-1', 'prov_ssl', '0'),
+('-1', 'prov_check_agent', '1'),
 ('-1', 'prov_username', 'PlcmSpIp'),
 ('-1', 'prov_password', 'PlcmSpIp'),
 ('-1', 'prov_uploads', '1'),
 ('-1', 'address', '" . $db->escapeSimple($_SERVER['SERVER_NAME']) . "'),
 ('-1', 'port', '5060'),
+('-1', 'expires', '3600'),
 ('-1', 'nat_keepalive_interval', '0'),
 ('-1', 'tcpIpApp_sntp_resyncPeriod', '86400'),
 ('-1', 'tcpIpApp_sntp_address_overrideDHCP', '0'),
@@ -243,7 +245,22 @@ if(DB::IsError($check)) {
 	}
 }
 
-// Add NTP settings and default codec priorities to networks
+// Add version column to devices table
+$sql = "SELECT version FROM polycom_devices";
+$check = $db->getRow($sql, DB_FETCHMODE_ASSOC);
+if(DB::IsError($check)) {
+	$sql = array();
+    $sql[] = "ALTER TABLE `polycom_devices` ADD `version` VARCHAR( 20 ) NOT NULL AFTER `model`;";
+	
+	foreach ($sql as $statement){
+		$check = $db->query($statement);
+		if (DB::IsError($check)){
+			die_freepbx( "Can not execute $statement : " . $check->getMessage() .  "\n");
+		}
+	}
+}
+
+// Add new settings and default codec priorities to networks
 $sql = "SELECT id FROM polycom_networks";
 $networks = $db->getAll($sql, DB_FETCHMODE_ASSOC);
 if (DB::IsError($networks)){
@@ -251,9 +268,11 @@ if (DB::IsError($networks)){
 }
 foreach($networks as $network) {
 	$sql = "INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
-	('" . $network['id'] . "' , 'tcpIpApp_sntp_resyncPeriod', '86400'),
-	('" . $network['id'] . "' , 'tcpIpApp_sntp_gmtOffset_overrideDHCP', '0'),
-	('" . $network['id'] . "' , 'voice_codecPref_G711_Mu', '6'),
+	('" . $network['id'] . "', 'prov_check_agent', '1'),
+	('" . $network['id'] . "', 'expires', '3600'),
+	('" . $network['id'] . "', 'tcpIpApp_sntp_resyncPeriod', '86400'),
+	('" . $network['id'] . "', 'tcpIpApp_sntp_gmtOffset_overrideDHCP', '0'),
+	('" . $network['id'] . "', 'voice_codecPref_G711_Mu', '6'),
 	('" . $network['id'] . "', 'voice_codecPref_G711_A', '7'),
 	('" . $network['id'] . "', 'voice_codecPref_G722', '4'),
 	('" . $network['id'] . "', 'voice_codecPref_G729_AB', '8');";
