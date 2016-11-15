@@ -9,7 +9,7 @@
 	<tr>
 		<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 		<td class="index"></td>
-		<td>'.form_dropdown('line[]', array(), '', 'id="newline"').'</td>
+		<td id="newline">'.form_dropdown('line[]', array(), '', '').'</td>
 		<td>'.form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, true), '').'</td>	
 		<td>'.form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), '').'</td>	
 		<td>'.form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), '').'</td>
@@ -28,7 +28,7 @@
 	<tr>
 		<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 		<td class="index"></td>
-		<td>'.form_dropdown('attendant[]', array(), '', 'id="newattendant"').'</td>
+		<td id="newattendant">'.form_dropdown('attendant[]', array(), '', '').'</td>
 		<td>'.form_input('label[]', '', 'maxlength="30"').'</td>	
 		<td class="type">'.form_dropdown('type[]', polycomphones_dropdown('attendantType'), '', 'style="display: none"').'</td>
 		<td><img src="images/trash.png" class="deleteattendant" style="cursor:pointer; float:none;" alt="remove" title="Click to delete attendent"></td>
@@ -87,7 +87,7 @@ $(document).ready(function() {
 	// Lines
 	$(".addline").on("click",function() {
 		$("#lines").append(<?php echo json_encode($newline); ?>);
-		loadDropdown($("#newline"), <?php echo json_encode($dropdown_lines); ?>);
+		loadDropdown($("#newline select"), <?php echo json_encode($dropdown_lines); ?>);
 		tableIndex($("#lines"));
 	});
 
@@ -107,7 +107,7 @@ $(document).ready(function() {
 	// Attendant Console
 	$(".addattendant").on("click",function() {
 		$("#attendants").append(<?php echo json_encode($newattendant); ?>);	
-		loadDropdown($("#newattendant"), <?php echo json_encode($dropdown_attendant); ?>);
+		loadDropdown($("#newattendant select"), <?php echo json_encode($dropdown_attendant); ?>);
 		tableIndex($("#attendants"));
 	});
 
