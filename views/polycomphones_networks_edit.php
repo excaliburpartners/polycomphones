@@ -50,10 +50,6 @@ $(function(){
 		<td><?php echo form_dropdown('prov_ssl', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_ssl']); ?></td>
 	</tr>
 	<tr>
-		<td><?php echo _("Check User Agent")?><span class="help">?<span style="display: none;">If 'Enabled', check the phone model against the user agent for enhanced security.</span></span></td>
-		<td><?php echo form_dropdown('prov_check_agent', polycomphones_dropdown('disabled_enabled'), $network['settings']['prov_check_agent']); ?></td>
-	</tr>
-	<tr>
 		<td><?php echo _("Username")?><span class="help">?<span style="display: none;">If a username is provided authentication will be required for phone provisioning. DHCP or phone provisioning server settings must be configured to match. Multiple usernames to be accepted should be delimited by |.<br />DHCP Option 160: http://username:password@voip.domain.com/polycom/<br />Default: PlcmSpIp</span></span></td>
 		<td><?php echo form_input('prov_username', $network['settings']['prov_username']); ?></td>
 	</tr>

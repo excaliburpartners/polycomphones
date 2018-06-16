@@ -17,16 +17,19 @@ function polycomphones_configpageload($pagename)
 	global $currentcomponent;
 	global $db;
 
-	$phones = sql("SELECT polycom_devices.id, polycom_devices.name, polycom_devices.mac FROM polycom_devices
-		INNER JOIN polycom_device_lines ON polycom_devices.id = polycom_device_lines.id
-		WHERE polycom_device_lines.deviceid = '".$db->escapeSimple($_REQUEST['extdisplay'])."'",'getAll',DB_FETCHMODE_ASSOC);
-	
-	foreach($phones as $phone)
+	if($_REQUEST['extdisplay'] !== false)
 	{
-		$editURL = $_SERVER['PHP_SELF'].'?display=polycomphones&polycomphones_form=phones_edit&edit='.$phone['id'];
-		$tlabel =  sprintf(_("Edit Polycom Phone: %s (%s)"),$phone['name'], $phone['mac']);
-		$label = '<span><img width="16" height="16" border="0" title="'.$tlabel.'" alt="" src="images/telephone_edit.png"/>&nbsp;'.$tlabel.'</span>';
-		$currentcomponent->addguielem('_top', new gui_link('edit_polycomphone', $label, $editURL, true, false), 0);
+		$phones = sql("SELECT polycom_devices.id, polycom_devices.name, polycom_devices.mac FROM polycom_devices
+			INNER JOIN polycom_device_lines ON polycom_devices.id = polycom_device_lines.id
+			WHERE polycom_device_lines.deviceid = '".$db->escapeSimple($_REQUEST['extdisplay'])."'",'getAll',DB_FETCHMODE_ASSOC);
+		
+		foreach($phones as $phone)
+		{
+			$editURL = $_SERVER['PHP_SELF'].'?display=polycomphones&polycomphones_form=phones_edit&edit='.$phone['id'];
+			$tlabel =  sprintf(_("Edit Polycom Phone: %s (%s)"),$phone['name'], $phone['mac']);
+			$label = '<span><img width="16" height="16" border="0" title="'.$tlabel.'" alt="" src="images/telephone_edit.png"/>&nbsp;'.$tlabel.'</span>';
+			$currentcomponent->addguielem('_top', new gui_link('edit_polycomphone', $label, $editURL, true, false), 0);
+		}
 	}
 }
 
@@ -101,6 +104,7 @@ function polycomphones_checkconfig_deviceid($id = null)
 	global $astman;
 	
 	$astman->send_request('Command', array('Command' => 'sip notify polycom-check-cfg '.$id));
+	$astman->send_request('Command', array('Command' => 'pjsip send notify polycom-check-cfg endpoint '.$id));
 }
 
 function polycomphones_checkconfig($id = null)
@@ -114,7 +118,10 @@ function polycomphones_checkconfig($id = null)
 		GROUP BY id",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $result)
+	{
 		$astman->send_request('Command', array('Command' => 'sip notify polycom-check-cfg '.$result['deviceid']));
+		$astman->send_request('Command', array('Command' => 'pjsip send notify polycom-check-cfg endpoint '.$result['deviceid']));
+	}
 }
 
 function polycomphones_push_checkconfig($id = null)
@@ -245,13 +252,14 @@ function polycomphones_get_phones_list()
 		ORDER BY mac",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $key=>$result)
-		$results[$key]['lines'] = sql("SELECT polycom_device_lines.lineid, devices.id, devices.description, 
-				users.extension, users.name, polycom_externallines.name AS external
+		$results[$key]['lines'] = sql("SELECT polycom_device_lines.lineid, polycom_device_lines.deviceid,
+				devices.id, devices.description, users.extension, users.name, polycom_externallines.name AS external
 			FROM polycom_device_lines
 			LEFT OUTER JOIN devices ON devices.id = polycom_device_lines.deviceid
 			LEFT OUTER JOIN users ON devices.user = users.extension
 			LEFT OUTER JOIN polycom_externallines ON polycom_externallines.id = polycom_device_lines.externalid
-			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result[id])}\"",'getAll',DB_FETCHMODE_ASSOC);
+			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result[id])}\"
+			ORDER BY polycom_device_lines.lineid",'getAll',DB_FETCHMODE_ASSOC);
 	
 	return $results;
 }
@@ -636,11 +644,9 @@ function polycomphones_get_networks_ip($ip)
 function polycomphones_check_network($network)
 {
 	if($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
-	{
-		header('HTTP/1.0 403 Forbidden');
-		polycomphones_send_error('403 Forbidden', 'SSL is required to view this page.');
-	}
+		polycomphone_send_forbidden();
 	
+	// Network has authentication disabled
 	if(empty($network['settings']['prov_username']))
 		return;
 	
@@ -669,10 +675,15 @@ function polycomphone_send_unauthorized()
 	polycomphones_send_error('401 Unathorized', 'Authentication is required to view this page.');
 }
 
+function polycomphone_send_forbidden()
+{
+	header('HTTP/1.0 403 Forbidden');
+	polycomphones_send_error('403 Forbidden', 'Access is denied');
+}
+
 function polycomphones_send_error($title, $message)
 {
-	echo '
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+	echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>' . $title . '</title>
 </head><body>
@@ -726,7 +737,7 @@ function polycomphones_dropdown_lines($id)
 	
 	$results = sql("SELECT devices.id, devices.description, users.extension, users.name FROM devices 
 		LEFT OUTER JOIN users on devices.user = users.extension
-		WHERE tech = 'sip' ORDER BY devices.id",'getAll',DB_FETCHMODE_ASSOC);
+		WHERE tech IN ('sip', 'pjsip') ORDER BY devices.id",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $result)
 		if(!in_array($result['id'], $assigned))
@@ -840,11 +851,11 @@ function polycomphones_dropdown_attendant()
 	return $dropdown;
 }
 
-function polycomphones_dropdown_numbers($start, $end, $interval = 1, $default = false, $defaultvalue = 'Default')
+function polycomphones_dropdown_numbers($start, $end, $interval = 1, $unit = '', $default = false, $defaultvalue = 'Default')
 {
 	$dropdown = array();
 	for($i=$start; $i<=$end; $i = $i+$interval)
-		$dropdown[$i] = $i;
+		$dropdown[$i] = $i . $unit;
 		
 	return $default ? array(''=>$defaultvalue) + $dropdown : $dropdown;
 }
@@ -947,12 +958,12 @@ function polycomphones_dropdown($id, $default = false, $defaultvalue = 'Default'
 	
 	$dropdowns['nat_keepalive_interval'] = array(
 		'0' => 'Disabled',
-		'15' => '15',
-		'20' => '20',
-		'25' => '25',
-		'30' => '30',
-		'45' => '45',
-		'60' => '60',
+		'15' => '15 seconds',
+		'20' => '20 seconds',
+		'25' => '25 seconds',
+		'30' => '30 seconds',
+		'45' => '45 seconds',
+		'60' => '60 seconds',
 	);
 	
 	$dropdowns['transport'] = array(
@@ -986,6 +997,13 @@ function polycomphones_check_module($module)
 	global $db;
 	return sql("SELECT id FROM modules 
 		WHERE modulename = '".$db->escapeSimple($module)."' AND enabled = '1'",'getOne');
+}
+
+function polycomphones_get_kvstore($key)
+{
+	global $db;
+	return sql("SELECT val FROM kvstore
+		WHERE `key` = '".$db->escapeSimple($key)."' AND module = 'Sipsettings'",'getOne');
 }
 
 function polycomphones_getvalue($id, $device, $global)

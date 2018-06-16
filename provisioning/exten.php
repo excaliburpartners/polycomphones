@@ -1,14 +1,17 @@
 <?php
 
-if(!isset($_GET['mac']) || preg_match('/^([a-f0-9]{12})$/', $_GET['mac']) != 1)
-  die();
-
 $bootstrap_settings['freepbx_auth'] = false;
 $bootstrap_settings['skip_astman'] = true;
 if (!@include_once(getenv('FREEPBX_CONF') ? getenv('FREEPBX_CONF') : '/etc/freepbx.conf')) {
     include_once('/etc/asterisk/freepbx.conf');
 }
 
+// Basic sanity checks for MAC and user agent
+if(!isset($_GET['mac']) || preg_match('/^([a-f0-9]{12})$/', $_GET['mac']) != 1 
+	|| strpos($_SERVER['HTTP_USER_AGENT'], 'Polycom') === false)
+		polycomphone_send_forbidden();
+
+// Lookup IP to determine if authentication or SSL is required
 $network = polycomphones_get_networks_ip($_SERVER['REMOTE_ADDR']);
 polycomphones_check_network($network);
 
@@ -82,6 +85,8 @@ $xml = new SimpleXMLElement(
     </efkprompt>  
   </efk>
   <feature>
+    <callRecording>
+    </callRecording>
     <directedCallPickup>
     </directedCallPickup>
     <corporateDirectory>
@@ -119,6 +124,10 @@ $xml = new SimpleXMLElement(
       </duration>
     </officeHours>
   </powerSaving>
+  <prov>
+    <polling>
+	</polling>
+  </prov>
   <se>
     <saf
 	  saf.2="LoudRing.wav" saf.3="Warble.wav">
@@ -175,46 +184,49 @@ $xml = new SimpleXMLElement(
   </voIpProt>
 </polycomConfig>');
 
+$matches = array();
+preg_match('/FileTransport Polycom([^\/.]+)\/([\w\.]+)/', $_SERVER['HTTP_USER_AGENT'], $matches);
+
+// Require version and model to be provided
+if(empty($matches[1]) || empty($matches[2]))
+	polycomphone_send_forbidden();
+
 $id = polycomphones_lookup_mac($_GET['mac']);
 
-$polycom_request = strpos($_SERVER['HTTP_USER_AGENT'], 'Polycom') !== false;
+$general = polycomphones_get_general_edit();
 
-if($id == null && !$polycom_request)
-	polycomphones_send_error('403 Forbidden', 'Access is denied');
-
-if($polycom_request)
+// Add unknown device to database
+if($id == null)
 {
-	$matches = array();
-	preg_match('/FileTransport Polycom([^\/.]+)\/([\w\.]+)/', $_SERVER['HTTP_USER_AGENT'], $matches);
-	
-	if($id == null)
-	{
-		sql("INSERT INTO polycom_devices (name, mac, model, version, lastconfig, lastip) 
-			VALUES ('Auto Added','" . $db->escapeSimple($_GET['mac']) . "','" . 
-			$db->escapeSimple($matches[1]) .  "','" . $db->escapeSimple($matches[2]) .
-			"',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
-			
-		$id = sql("SELECT LAST_INSERT_ID()",'getOne');
+	sql("INSERT INTO polycom_devices (name, mac, model, version, lastconfig, lastip) 
+		VALUES ('Auto Added','" . $db->escapeSimple($_GET['mac']) . "','" . 
+		$db->escapeSimple($matches[1]) .  "','" . $db->escapeSimple($matches[2]) .
+		"',NOW(),'" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "')");
 		
-		polycomphones_clear_overrides($_GET['mac']);
-		polycomphones_save_phones_directory($_GET['mac'], array());
-	}
-	else
-		sql("UPDATE polycom_devices SET 
-				lastconfig = NOW(), 
-				model = '" . $db->escapeSimple($matches[1]) . "',
-				version = '" . $db->escapeSimple($matches[2]) . "',
-				lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
-			WHERE id = '" . $db->escapeSimple($id) . "'");
+	$id = sql("SELECT LAST_INSERT_ID()",'getOne');
+	
+	polycomphones_clear_overrides($_GET['mac']);
+	polycomphones_save_phones_directory($_GET['mac'], array());
+	
+	$device = polycomphones_get_phones_edit($id);
+}
+else
+{
+	$device = polycomphones_get_phones_edit($id);
+
+	// If model known require it to match the user agent
+	if(!empty($device['model']) && strpos($_SERVER['HTTP_USER_AGENT'], $device['model']) === false)
+		polycomphone_send_forbidden();
+
+	sql("UPDATE polycom_devices SET 
+			lastconfig = NOW(), 
+			model = '" . $db->escapeSimple($matches[1]) . "',
+			version = '" . $db->escapeSimple($matches[2]) . "',
+			lastip = '" . $db->escapeSimple($_SERVER['REMOTE_ADDR']) . "'
+		WHERE id = '" . $db->escapeSimple($id) . "'");
 }
 
-$device = polycomphones_get_phones_edit($id);
-
-if($network['settings']['prov_check_agent'] == '1' && strpos($_SERVER['HTTP_USER_AGENT'], $device['model']) === false)
-	polycomphones_send_error('403 Forbidden', 'Access is denied');
-
 $alerts = polycomphones_get_alertinfo_list();
-$general = polycomphones_get_general_edit();
 $exchange_module = polycomphones_check_module('exchangeum');
 $parking_module = polycomphones_check_module('parking');
 $features_module = polycomphones_check_module('phonefeatures');
@@ -230,7 +242,7 @@ foreach($device['lines'] as $line)
 	if($line['deviceid'] != null)
 	{
 		$details = sql('
-		  SELECT d.id, d.user, d.devicetype, u.name,
+		  SELECT d.id, d.tech, d.user, d.devicetype, u.name,
 		    ssecret.data AS pass, stransport.data AS transport
 		  FROM devices AS d
 		  INNER JOIN users AS u
@@ -240,8 +252,6 @@ foreach($device['lines'] as $line)
 		  INNER JOIN sip AS stransport
 			ON d.id = stransport.id AND stransport.keyword = "transport"
 		  WHERE d.id = "' . $db->escapeSimple($line['deviceid']) . '"','getRow',DB_FETCHMODE_ASSOC);
-		
-		$transports = explode(',', $details['transport']);		
 		
 		if($i==1)
 		{
@@ -289,11 +299,34 @@ foreach($device['lines'] as $line)
 		{
 			$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
 			$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
-			$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+			
+			if($details['tech'] == 'pjsip')
+			{
+				if(empty($details['transport']))
+				{
+					$xml->reg->addAttribute("reg.$i.server.1.port", polycomphones_get_kvstore('udpport-0.0.0.0'));
+					$xml->reg->addAttribute("reg.$i.server.1.transport", 'UDPOnly');
+				}
+				else
+				{
+					$transports = explode('-', $details['transport']);
+					$xml->reg->addAttribute("reg.$i.server.1.port", polycomphones_get_kvstore($transports[1] . 'port-' . $transports[0]));
+					
+					if($transports[1] == 'udp' or $transports[1] == 'tcp')
+						$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[1]) . 'Only');
+					elseif($transports[1] == 'tls')
+						$xml->reg->addAttribute("reg.$i.server.1.transport", 'TLS');
+				}
+			}
+			else 
+			{
+				$transports = explode(',', $details['transport']);
+				$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+				$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
+			}
 		}
 		
 		$xml->reg->addAttribute("reg.$i.server.1.expires", $network['settings']['expires']);
-		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
 		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
 		$xml->reg->addAttribute("reg.$i.ringType", polycomphones_getvalue('ringType', $line, $general));
 		$xml->call->missedCallTracking->addAttribute("call.missedCallTracking.$i.enabled", polycomphones_getvalue('missedCallTracking', $line, $general));	
@@ -575,6 +608,13 @@ $xml->dialplan->addAttribute("dialplan.digitmap", "*x.T|**[1-9]".$digits."|[2-9]
 if(!empty($general['mb_main_home']))
 	$xml->mb->main->addAttribute("mb.main.home", $general['mb_main_home']);
 
+if(!empty($general['prov_polling_period']))
+{
+	$xml->prov->polling->addAttribute("prov.polling.enabled", '1');
+	$xml->prov->polling->addAttribute("prov.polling.mode", 'rel');
+	$xml->prov->polling->addAttribute("prov.polling.period", $general['prov_polling_period'] * 60 * 60);
+}
+
 $xml->device->auth->addAttribute("device.auth.localUserPassword", $general['device_auth_localUserPassword']);
 $xml->device->auth->addAttribute("device.auth.localAdminPassword", $general['device_auth_localAdminPassword']);
 	
@@ -588,6 +628,7 @@ $xml->up->addAttribute("up.headsetMode", polycomphones_getvalue('up_headsetMode'
 $xml->up->addAttribute("up.analogHeadsetOption", polycomphones_getvalue('up_analogHeadsetOption', $device, $general));
 $xml->up->addAttribute("up.useDirectoryNames", polycomphones_getvalue('up_useDirectoryNames', $device, $general));
 $xml->dir->local->addAttribute("dir.local.readonly", polycomphones_getvalue('dir_local_readonly', $device, $general));
+$xml->feature->callRecording->addAttribute("feature.callRecording.enabled", polycomphones_getvalue('feature_callRecording_enabled', $device, $general));
 $xml->feature->directedCallPickup->addAttribute("feature.directedCallPickup.enabled", polycomphones_getvalue('feature_directedCallPickup_enabled', $device, $general));
 $xml->attendant->ringType->addAttribute("attendant.ringType", polycomphones_getvalue('attendant_ringType', $device, $general));
 $xml->powerSaving->addAttribute("powerSaving.enable", polycomphones_getvalue('powerSaving_enable', $device, $general));

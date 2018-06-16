@@ -1,32 +1,13 @@
 <h2>Alert Info</h2>
 <hr />
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.min.js"></script>
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.widgets.min.js"></script>
 
-<script type="text/javascript">
-$(function(){
-  $("#lines").tablesorter({
-    theme : 'jui',
-    headerTemplate : '{content} {icon}',
-    widgets : ['uitheme', 'zebra'],
-    widgetOptions : {
-      zebra   : ["even", "odd"],
-    }
-  });
-});
-</script>
-
-<form name="polycomphones_alertinfo" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=alertinfo_list">
-
-<p></p>
-
-<table id="lines" class="tablesorter" width="100%">
+<table data-maintain-selected="true" data-show-columns="true" data-show-toggle="true" data-toggle="table" data-pagination="true" data-search="true" class="table table-striped ext-list" id="table-polycom">
 <thead>
 <tr>
-	<th width="22%">Class</th>
-	<th width="22%">Name</th>
-	<th width="22%">Ringer</th>
-	<th width="22%">Alert Info</th>
+	<th data-sortable="true">Class</th>
+	<th data-sortable="true">Name</th>
+	<th data-sortable="true">Ringer</th>
+	<th data-sortable="true">Alert Info</th>
 	<th width="12%">Actions</th>
 </tr>
 </thead>
@@ -57,4 +38,3 @@ foreach ($alerts as $alert) {
 ?>
 </tbody>
 </table>
-</form>

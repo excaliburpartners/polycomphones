@@ -1,31 +1,15 @@
 <h2>External Lines</h2>
 <hr />
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.min.js"></script>
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.widgets.min.js"></script>
 
-<script type="text/javascript">
-$(function(){
-  $("#lines").tablesorter({
-    theme : 'jui',
-    headerTemplate : '{content} {icon}',
-    widgets : ['uitheme', 'zebra'],
-    widgetOptions : {
-      zebra   : ["even", "odd"],
-    }
-  });
-});
-</script>
+<div id="toolbar-polycom">
+	<input type="button" value="Add external line" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=externallines_edit&edit=0'" />
+</div>
 
-<form name="polycomphones_externallines" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=externallines_list">
-<input type="button" value="Add external line" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=externallines_edit&edit=0'" />
-
-<p></p>
-
-<table id="lines" class="tablesorter" width="50%">
+<table data-toolbar="#toolbar-polycom" data-maintain-selected="true" data-show-columns="true" data-show-toggle="true" data-toggle="table" data-pagination="true" data-search="true" class="table table-striped ext-list" id="table-polycom">
 <thead>
 <tr>
-	<th width="60%">Name</th>
-	<th width="40%">Actions</th>
+	<th data-sortable="true">Name</th>
+	<th>Actions</th>
 </tr>
 </thead>
 <tbody>
@@ -45,4 +29,3 @@ foreach ($lines as $line) {
 ?>
 </tbody>
 </table>
-</form>

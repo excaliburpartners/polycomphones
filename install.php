@@ -33,6 +33,7 @@ $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('se_pat_misc_messageWaiting_inst', '1'),
 ('apps_ucdesktop_adminEnabled', '0'), 
 ('attendant_ringType', 'ringer1'),
+('feature_callRecording_enabled', '0'),
 ('feature_directedCallPickup_enabled', '0'),
 ('attendant_spontaneousCallAppearances_normal', '1'),
 ('attendant_spontaneousCallAppearances_automata', '0'),
@@ -93,7 +94,6 @@ WHERE keyword IN ('address', 'port', 'tcpIpApp_sntp_address', 'tcpIpApp_sntp_gmt
 
 $sql[]="INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
 ('-1', 'prov_ssl', '0'),
-('-1', 'prov_check_agent', '1'),
 ('-1', 'prov_username', 'PlcmSpIp'),
 ('-1', 'prov_password', 'PlcmSpIp'),
 ('-1', 'prov_uploads', '1'),
@@ -269,7 +269,6 @@ if (DB::IsError($networks)){
 }
 foreach($networks as $network) {
 	$sql = "INSERT IGNORE INTO polycom_network_settings (id, keyword, value) VALUES
-	('" . $network['id'] . "', 'prov_check_agent', '1'),
 	('" . $network['id'] . "', 'expires', '3600'),
 	('" . $network['id'] . "', 'tcpIpApp_sntp_resyncPeriod', '86400'),
 	('" . $network['id'] . "', 'tcpIpApp_sntp_gmtOffset_overrideDHCP', '0'),

@@ -46,7 +46,11 @@
 		<tr>
 			<td><?php echo _("MWI Audible Alert")?><span class="help">?<span style="display: none;">If 'Enabled', the audible message waiting alert will be played.</span></span></td>
 			<td><?php echo form_dropdown('se_pat_misc_messageWaiting_inst', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['se_pat_misc_messageWaiting_inst']); ?></td>	
-		</tr>	
+		</tr>
+		<tr>
+			<td><?php echo _("USB Call Recording")?>*<span class="help">?<span style="display: none;">If 'Enabled', USB call recording is enabled on the device.</span></span></td>
+			<td><?php echo form_dropdown('feature_callRecording_enabled', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['feature_callRecording_enabled']); ?></td>	
+		</tr>
 		<tr>
 			<td><?php echo _("UC Desktop Connector")?>*<span class="help">?<span style="display: none;">If 'Enabled', the Polycom Desktop Connector is enabled on the administrative level.</span></span></td>
 			<td><?php echo form_dropdown('apps_ucdesktop_adminEnabled', polycomphones_dropdown('disabled_enabled', $phone_default), $phone_options['apps_ucdesktop_adminEnabled']); ?></td>	

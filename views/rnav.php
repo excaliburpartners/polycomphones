@@ -28,7 +28,7 @@ $show['General Settings'] = '<li><a '
 	. 'href="config.php?type=setup&display=polycomphones&polycomphones_form=general_edit">' . _("General Settings") . '</a></li>';
 
 echo '
-<div class="rnav"><ul>';
+<div class="col-sm-2 rnav"><ul>';
 foreach ($show as $s) {
 	echo $s;
 }

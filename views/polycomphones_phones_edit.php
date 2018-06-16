@@ -10,7 +10,7 @@
 		<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 		<td class="index"></td>
 		<td id="newline">'.form_dropdown('line[]', array(), '', '').'</td>
-		<td>'.form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, true), '').'</td>	
+		<td>'.form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, '', true), '').'</td>	
 		<td>'.form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), '').'</td>	
 		<td>'.form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), '').'</td>
 		<td>'.form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), '').'</td>	
@@ -249,7 +249,7 @@ if(!empty($_GET['edit'])) {
 				<td class="sort"><img src="images/arrow_up_down.png" alt="sort" title="Drag up or down to reposition" /></td>
 				<td class="index"><?php echo $i;?></td>
 				<td><?php echo form_dropdown('line[]', $dropdown_lines, $line['line']); ?></td>
-				<td><?php echo form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, true), $line['settings']['lineKeys']); ?></td>	
+				<td><?php echo form_dropdown('lineKeys[]', polycomphones_dropdown_numbers(1, 4, 1, '', true), $line['settings']['lineKeys']); ?></td>	
 				<td><?php echo form_dropdown('ringType[]', polycomphones_dropdown('ringType', true), $line['settings']['ringType']); ?></td>	
 				<td><?php echo form_dropdown('missedCallTracking[]', polycomphones_dropdown('disabled_enabled', true), $line['settings']['missedCallTracking']); ?></td>
 				<td><?php echo form_dropdown('callBackMode[]', polycomphones_dropdown('callBackMode', true), $line['settings']['callBackMode']); ?></td>	

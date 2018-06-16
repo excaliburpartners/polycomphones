@@ -10,7 +10,7 @@
 		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
 	</tr>
 	<tr>
-		<td><?php echo _("Extension Reuse")?><span class="help">?<span style="display: none;">If 'Enabled' an extension will be able to be assigned to multiple devices. This is useful for PJSIP or integration with Kamailio.</span></span></td>
+		<td><?php echo _("Extension Reuse")?><span class="help">?<span style="display: none;">If 'Enabled' an extension will be able to be assigned to multiple devices. This is useful for PJSIP or ingeration with Kamailio.</span></span></td>
 		<td><?php echo form_dropdown('multiple_assignment', polycomphones_dropdown('disabled_enabled'), $general['multiple_assignment']); ?></td>	
 	</tr>
 	<tr>
@@ -20,6 +20,10 @@
 	<tr>
 		<td><?php echo _("Applications Home URL")?><span class="help">?<span style="display: none;">The URL of the microbrowser's Home page.</span></span></td>
 		<td><?php echo form_input('mb_main_home', $general['mb_main_home'], 'size="40"'); ?></td>	
+	</tr>
+		<tr>
+		<td><?php echo _("Config Polling")?><span class="help">?<span style="display: none;">If a duration is selected the provisioning server is automatically polled for updates.</span></span></td>
+		<td><?php echo form_dropdown('prov_polling_period',  polycomphones_dropdown_numbers(1, 72, 1, ' hours', true, 'Disabled'), $general['prov_polling_period']); ?></td>	
 	</tr>
 	
 	<tr><td colspan="2"><h5><?php echo _("Device Options")?><hr/></h5></td></tr>
@@ -87,7 +91,7 @@
 	<table>
 		<tr>
 			<td><?php echo _("Idle Timeout Office Hours")?><span class="help">?<span style="display: none;">The number of minutes to wait while the phone is idle during office hours before activating power saving.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_idleTimeout_officeHours', polycomphones_dropdown_numbers(30, 600, 30, '1', '1'), $general['powerSaving_idleTimeout_officeHours']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_idleTimeout_officeHours', polycomphones_dropdown_numbers(30, 600, 30, ' minutes'), $general['powerSaving_idleTimeout_officeHours']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Day Start Monday")?><span class="help">?<span style="display: none;">The starting hour for the day's office hours.</span></span></td>
@@ -125,35 +129,35 @@
 	<table>
 		<tr>
 			<td><?php echo _("Idle Timeout Off Hours")?><span class="help">?<span style="display: none;">The number of minutes to wait while the phone is idle during off hours before activating power saving.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_idleTimeout_offHours', polycomphones_dropdown_numbers(1, 10), $general['powerSaving_idleTimeout_offHours']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_idleTimeout_offHours', polycomphones_dropdown_numbers(1, 10, 1, ' minutes'), $general['powerSaving_idleTimeout_offHours']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Monday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_monday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_monday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_monday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_monday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Tuesday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_tuesday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_tuesday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_tuesday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_tuesday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Wednesday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_wednesday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_wednesday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_wednesday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_wednesday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Thursday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_thursday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_thursday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_thursday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_thursday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Friday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_friday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_friday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_friday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_friday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Saturday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_saturday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_saturday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_saturday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_saturday']); ?></td>	
 		</tr>
 		<tr>
 			<td><?php echo _("Duration Sunday")?><span class="help">?<span style="display: none;">The duration of the day's office hours.</span></span></td>
-			<td><?php echo form_dropdown('powerSaving_officeHours_duration_sunday', polycomphones_dropdown_numbers(0, 24), $general['powerSaving_officeHours_duration_sunday']); ?></td>	
+			<td><?php echo form_dropdown('powerSaving_officeHours_duration_sunday', polycomphones_dropdown_numbers(0, 24, 1, ' hours'), $general['powerSaving_officeHours_duration_sunday']); ?></td>	
 		</tr>
 	</table>
 	

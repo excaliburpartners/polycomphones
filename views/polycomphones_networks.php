@@ -1,32 +1,16 @@
 <h2>Networks</h2>
 <hr />
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.min.js"></script>
-<script type="text/javascript" src="modules/polycomphones/assets/js/jquery.tablesorter.widgets.min.js"></script>
 
-<script type="text/javascript">
-$(function(){
-  $("#lines").tablesorter({
-    theme : 'jui',
-    headerTemplate : '{content} {icon}',
-    widgets : ['uitheme', 'zebra'],
-    widgetOptions : {
-      zebra   : ["even", "odd"],
-    }
-  });
-});
-</script>
+<div id="toolbar-polycom">
+	<input type="button" value="Add network" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=networks_edit&edit=0'" />
+</div>
 
-<form name="polycomphones_networks" method="post" action="config.php?type=setup&display=polycomphones&polycomphones_form=networks_list">
-<input type="button" value="Add network" onclick="location.href='config.php?type=setup&display=polycomphones&polycomphones_form=networks_edit&edit=0'" />
-
-<p></p>
-
-<table id="lines" class="tablesorter" width="60%">
+<table data-toolbar="#toolbar-polycom" data-maintain-selected="true" data-show-columns="true" data-show-toggle="true" data-toggle="table" data-pagination="true" data-search="true" class="table table-striped ext-list" id="table-polycom">
 <thead>
 <tr>
-	<th width="50%">Name</th>
-	<th width="30%">Network CIDR</th>
-	<th width="20%">Actions</th>
+	<th data-sortable="true">Name</th>
+	<th data-sortable="true">Network CIDR</th>
+	<th>Actions</th>
 </tr>
 </thead>
 <tbody>
@@ -51,4 +35,3 @@ foreach ($networks as $network) {
 ?>
 </tbody>
 </table>
-</form>

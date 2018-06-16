@@ -15,8 +15,9 @@ if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
  * GNU General Public License for more details.
  */
 
-include('views/rnav.php');
-echo '<div id="content">';
+echo '<div class="container-fluid">
+<div class="row">
+<div class="col-sm-10">';
 
 switch($_GET['polycomphones_form'])
 {
@@ -138,6 +139,7 @@ switch($_GET['polycomphones_form'])
 				'up_useDirectoryNames',
 				'dir_local_readonly',
 				'se_pat_misc_messageWaiting_inst',
+				'feature_callRecording_enabled',
 				'apps_ucdesktop_adminEnabled',
 				'up_headsetMode',
 				'up_analogHeadsetOption',
@@ -324,7 +326,6 @@ switch($_GET['polycomphones_form'])
 			
 			$fields = array(
 				'prov_ssl',
-				'prov_check_agent',
 				'prov_username',
 				'prov_password',
 				'prov_uploads',
@@ -363,7 +364,6 @@ switch($_GET['polycomphones_form'])
 
 		if(empty($_GET['edit']))
 		{
-			$network['settings']['prov_check_agent'] = '1';
 			$network['settings']['prov_uploads'] = '1';
 			$network['settings']['port'] = '5060';
 			$network['settings']['expires'] = '5060';
@@ -417,6 +417,7 @@ switch($_GET['polycomphones_form'])
 				'multiple_assignment',
 				'httpd_cfg_enabled',
 				'mb_main_home',
+				'prov_polling_period',
 				'device_auth_localUserPassword',
 				'device_auth_localAdminPassword',
 				'lineKeys',
@@ -434,6 +435,7 @@ switch($_GET['polycomphones_form'])
 				'up_useDirectoryNames',
 				'dir_local_readonly',
 				'se_pat_misc_messageWaiting_inst',
+				'feature_callRecording_enabled',
 				'apps_ucdesktop_adminEnabled',
 				'up_headsetMode',
 				'up_analogHeadsetOption',
@@ -480,5 +482,7 @@ switch($_GET['polycomphones_form'])
 }
 
 echo '</div>';
+include('views/rnav.php');
+echo '</div></div>';
 
 ?>
