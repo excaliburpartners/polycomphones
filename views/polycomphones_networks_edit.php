@@ -101,6 +101,25 @@ $(function(){
 		<td><?php echo _("Registration Port")?>*<span class="help">?<span style="display: none;">FreePBX server SIP port. Example: 5060</span></span></td>
 		<td><?php echo form_input('port', $network['settings']['port'], 'size="10"'); ?></td>
 	</tr>
+	<?php
+	if ($kamailio_module) {
+	?>		
+	<tr>
+		<td><?php echo _("Kamailio Address")?>*<span class="help">?<span style="display: none;">Kamailio server IP or hostname. Example: sbc.domain.com</span></span></td>
+		<td><?php echo form_input('kamailio_address', $network['settings']['kamailio_address']); ?></td>
+	</tr>
+	<tr>
+		<td><?php echo _("Kamailio Port")?>*<span class="help">?<span style="display: none;">Kamailio server SIP port. Example: 5060</span></span></td>
+		<td><?php echo form_input('kamailio_port', $network['settings']['kamailio_port'], 'size="10"'); ?></td>
+	</tr>
+	<?php
+	} else { 
+	?>
+	<input type="hidden" name="kamailio_address" value="<?php echo $general['kamailio_address']; ?>">
+	<input type="hidden" name="kamailio_port" value="<?php echo $general['kamailio_port']; ?>">
+	<?php
+	}
+	?>
 	<tr>
 		<td><?php echo _("Registration Expiry")?>*<span class="help">?<span style="display: none;">Sets the requested registration period in seconds. Default: 3600</span></span></td>
 		<td><?php echo form_input('expires', $network['settings']['expires'], 'size="10"'); ?></td>

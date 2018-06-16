@@ -12,6 +12,7 @@ $sql[]='CREATE TABLE IF NOT EXISTS `polycom_settings` (
 $sql[]="INSERT IGNORE INTO `polycom_settings` (`keyword`, `value`) VALUES
 ('apps_push_password', '" . substr(hash('sha512',rand()),0,12) . "'),
 ('digits', '4'),
+('multiple_assignment', '0'),
 ('httpd_cfg_enabled', '1'),
 ('device_auth_localUserPassword', '123'),
 ('device_auth_localAdminPassword', '456'),

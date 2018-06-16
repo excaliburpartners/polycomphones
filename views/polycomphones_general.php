@@ -10,6 +10,10 @@
 		<td><?php echo form_dropdown('digits', polycomphones_dropdown_numbers(2, 10), $general['digits']); ?></td>	
 	</tr>
 	<tr>
+		<td><?php echo _("Extension Reuse")?><span class="help">?<span style="display: none;">If 'Enabled' an extension will be able to be assigned to multiple devices. This is useful for PJSIP or integration with Kamailio.</span></span></td>
+		<td><?php echo form_dropdown('multiple_assignment', polycomphones_dropdown('disabled_enabled'), $general['multiple_assignment']); ?></td>	
+	</tr>
+	<tr>
 		<td><?php echo _("Web Config Utility")?>*<span class="help">?<span style="display: none;">If 'Disabled', the Web Configuration Utility is disabled. If 'Enabled', the Web Configuration Utility is enabled.</span></span></td>
 		<td><?php echo form_dropdown('httpd_cfg_enabled', polycomphones_dropdown('disabled_enabled'), $general['httpd_cfg_enabled']); ?></td>	
 	</tr>

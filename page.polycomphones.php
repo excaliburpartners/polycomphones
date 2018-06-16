@@ -64,6 +64,8 @@ switch($_GET['polycomphones_form'])
 	case 'phones_edit':		
 		if(isset($_POST['action']) && $_POST['action'] == 'edit')
 		{	
+			$prevdeviceid = polycomphones_lookup_deviceid($_GET['edit']);
+	
 			$device['name'] = $_POST['name'];
 			$device['mac'] = strtolower($_POST['mac']);
 			
@@ -161,7 +163,7 @@ switch($_GET['polycomphones_form'])
 			if(polycomphones_push_checkconfig($_GET['edit']) !== true)
 			{
 				// Fallback to SIP notify which will work for external phones with a SIP registration	
-				polycomphones_checkconfig($_GET['edit']);
+				polycomphones_checkconfig_deviceid($prevdeviceid);
 			}
 			
 			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=phones_list');
@@ -334,6 +336,8 @@ switch($_GET['polycomphones_form'])
 				'device_prov_password',
 				'address',
 				'port',
+				'kamailio_address',
+				'kamailio_port',
 				'expires',
 				'nat_keepalive_interval',
 				'tcpIpApp_sntp_resyncPeriod',
@@ -354,6 +358,7 @@ switch($_GET['polycomphones_form'])
 			redirect('config.php?type=setup&display=polycomphones&polycomphones_form=networks_list');
 		}
 		
+		$kamailio_module = polycomphones_check_module('kamailio');
 		$network = polycomphones_get_networks_edit($_GET['edit']);
 
 		if(empty($_GET['edit']))
@@ -409,6 +414,7 @@ switch($_GET['polycomphones_form'])
 		{
 			$fields = array(
 				'digits',
+				'multiple_assignment',
 				'httpd_cfg_enabled',
 				'mb_main_home',
 				'device_auth_localUserPassword',

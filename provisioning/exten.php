@@ -88,8 +88,6 @@ $xml = new SimpleXMLElement(
     </corporateDirectory>
     <exchangeCalendar>
     </exchangeCalendar>
-    <nWayConference feature.nWayConference.enabled="1">
-    </nWayConference>
   </feature>
   <httpd>
     <cfg>
@@ -220,6 +218,7 @@ $general = polycomphones_get_general_edit();
 $exchange_module = polycomphones_check_module('exchangeum');
 $parking_module = polycomphones_check_module('parking');
 $features_module = polycomphones_check_module('phonefeatures');
+$kamailio_module = polycomphones_check_module('kamailio');
 
 // Lines
 $primary = '';
@@ -269,9 +268,30 @@ foreach($device['lines'] as $line)
 		$xml->reg->addAttribute("reg.$i.address", $details['id']);
 		$xml->reg->addAttribute("reg.$i.label", $label);
 		$xml->reg->addAttribute("reg.$i.auth.userId", $details['id']);
-		$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
-		$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
-		$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+
+		$kamailio_secret = false;
+		if($kamailio_module)
+		{
+			$secret = sql("SELECT secret FROM kamailio_devices 
+				WHERE device = '" . $db->escapeSimple($details['id']) . "'", 'getOne');
+				
+				if(!empty($secret))
+					$kamailio_secret = $secret;
+		}
+		
+		if($kamailio_secret !== false)
+		{
+			$xml->reg->addAttribute("reg.$i.auth.password", $kamailio_secret);	
+			$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['kamailio_address']);
+			$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['kamailio_port']);
+		} 
+		else 
+		{
+			$xml->reg->addAttribute("reg.$i.auth.password", $details['pass']);	
+			$xml->reg->addAttribute("reg.$i.server.1.address", $network['settings']['address']);
+			$xml->reg->addAttribute("reg.$i.server.1.port", $network['settings']['port']);
+		}
+		
 		$xml->reg->addAttribute("reg.$i.server.1.expires", $network['settings']['expires']);
 		$xml->reg->addAttribute("reg.$i.server.1.transport", strtoupper($transports[0]) . 'Only');
 		$xml->reg->addAttribute("reg.$i.lineKeys", polycomphones_getvalue('lineKeys', $line, $general));
@@ -291,7 +311,7 @@ foreach($device['lines'] as $line)
 		if($exchange_module)
 			$exchangevm = sql("SELECT user FROM exchangeum_users 
 				WHERE user = '" . $db->escapeSimple($details['user']) . "'
-					AND umenabled <> ''", 'getOne');		
+					AND umenabled <> ''", 'getOne');			
 		
 		$fcc = new featurecode($exchangevm != null ? 'exchangeum' : 'voicemail', 'myvoicemail');
 		$code = $fcc->getCodeActive();

@@ -88,6 +88,21 @@ function polycomphones_array_escape($values)
 	return $escaped;
 }
 
+function polycomphones_lookup_deviceid($id)
+{
+	global $db;
+	
+	return sql("SELECT MIN(deviceid) AS deviceid FROM `polycom_device_lines`
+		WHERE deviceid IS NOT NULL AND id = '".$id."' GROUP BY id",'getOne');
+}
+
+function polycomphones_checkconfig_deviceid($id = null)
+{
+	global $astman;
+	
+	$astman->send_request('Command', array('Command' => 'sip notify polycom-check-cfg '.$id));
+}
+
 function polycomphones_checkconfig($id = null)
 {
 	global $db, $astman;
@@ -154,14 +169,23 @@ function polycomphones_multiple_check()
 {
 	global $db;
 	
+	$nt =& notifications::create($db);
+	
+	$multiple_assignment = sql("SELECT value FROM polycom_settings WHERE keyword = 'multiple_assignment'",'getOne');
+	
+	if($multiple_assignment)
+	{
+		$nt->delete('polycomphones', 'multiple');
+		unset($nt);
+		return;
+	}
+
 	$results = sql("SELECT deviceid FROM polycom_device_lines 
 		GROUP BY deviceid HAVING COUNT(deviceid) > 1",'getAll',DB_FETCHMODE_ASSOC);
-	
+
 	$devices = array();
 	foreach($results as $result)
 		$devices[] = $result['deviceid'];
-	
-	$nt =& notifications::create($db);
 	
 	if(count($devices) > 0)
 	{
@@ -688,12 +712,17 @@ function polycomphones_dropdown_lines($id)
 	
 	$dropdown = array('' => '');
 	
-	$results = sql("SELECT DISTINCT deviceid FROM polycom_device_lines
-		" . (!empty($id) ? "WHERE id <> '" . $db->escapeSimple($id) . "'" : ""),'getAll',DB_FETCHMODE_ASSOC);
+	$multiple_assignment = sql("SELECT value FROM polycom_settings WHERE keyword = 'multiple_assignment'",'getOne');
 	
 	$assigned = array();
-	foreach($results as $result)
-		$assigned[] = $result['deviceid'];
+	if(!$multiple_assignment)
+	{
+		$results = sql("SELECT DISTINCT deviceid FROM polycom_device_lines
+			" . (!empty($id) ? "WHERE id <> '" . $db->escapeSimple($id) . "'" : ""),'getAll',DB_FETCHMODE_ASSOC);
+		
+		foreach($results as $result)
+			$assigned[] = $result['deviceid'];
+	}
 	
 	$results = sql("SELECT devices.id, devices.description, users.extension, users.name FROM devices 
 		LEFT OUTER JOIN users on devices.user = users.extension
