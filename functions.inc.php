@@ -1004,7 +1004,7 @@ function polycomphones_get_kvstore($key)
 	global $db;
 	// For FPBX 14, kvstore goes away, and kvstore_Sipsettings is now the place
 	return sql("SELECT val FROM kvstore_Sipsettings
-		WHERE `key` = '".$db->escapeSimple($key)."",'getOne');
+		WHERE `key` = '".$db->escapeSimple($key)."'",'getOne');
 }
 
 function polycomphones_getvalue($id, $device, $global)
