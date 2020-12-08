@@ -2,7 +2,7 @@
 	<rawname>polycomphones</rawname>
 	<repo>standard</repo>
 	<name>Polycom Phones</name>
-	<version>13.0.0</version>
+	<version>14.0.0</version>
 	<publisher>Excalibur Partners, LLC</publisher>
 	<license>GPLv2+</license>
 	<category>Connectivity</category>
@@ -11,6 +11,7 @@
 	</menuitems>
 	<description>Adds configurations, options and GUI for Polycom phones</description>
 	<changelog>
+		*14.0.0* FreePBX 14 support
 		*13.0.0* Add PJSIP support, improve security, and switch to FreePBX 13 layouts
 		*2.11.0.17* Adds multiple extension assignment and integration with Kamailio module
 		*2.11.0.16* Fixed another compatibility issue with FreePBX 13
@@ -32,6 +33,6 @@
 		*2.11.0.0* Initial release for UC software
 	</changelog>
 	<depends>
-		<version>13.0.0</version>
+		<version>14.0.0</version>
 	</depends>
 </module>
