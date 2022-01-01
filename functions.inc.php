@@ -258,7 +258,7 @@ function polycomphones_get_phones_list()
 			LEFT OUTER JOIN devices ON devices.id = polycom_device_lines.deviceid
 			LEFT OUTER JOIN users ON devices.user = users.extension
 			LEFT OUTER JOIN polycom_externallines ON polycom_externallines.id = polycom_device_lines.externalid
-			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result[id])}\"
+			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result['id'])}\"
 			ORDER BY polycom_device_lines.lineid",'getAll',DB_FETCHMODE_ASSOC);
 	
 	return $results;
