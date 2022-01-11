@@ -747,13 +747,13 @@ function polycomphones_dropdown_lines($id)
 	if(count($lines) > 0)
 		$dropdown['FreePBX'] = $lines;
 	
-	$results = sql("SELECT id, name FROM polycom_externallines",'getAll',DB_FETCHMODE_ASSOC);	
+	//$results = sql("SELECT id, name FROM polycom_externallines",'getAll',DB_FETCHMODE_ASSOC);	
 
-	foreach($results as $result)
-		$externallines['external_' . $result['id']]=$result['name'];
+	//foreach($results as $result)
+	//	$externallines['external_' . $result['id']]=$result['name'];
 		
-	if(count($externallines) > 0)
-		$dropdown['External'] = $externallines;
+	//if(count($externallines) > 0)
+	//	$dropdown['External'] = $externallines;
 	
 	return $dropdown;
 }
