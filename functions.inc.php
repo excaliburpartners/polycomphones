@@ -449,7 +449,7 @@ function polycomphones_save_phones_directory($mac, $directory)
 
 	foreach($directory as $contact)
 	{
-		$child = $xml->item_list->addChild(item);
+		$child = $xml->item_list->addChild("item");
 		
 		foreach($fields as $field)
 			$child->addChild($field, $contact[$field]);
