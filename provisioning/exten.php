@@ -2,17 +2,21 @@
 
 $bootstrap_settings['freepbx_auth'] = false;
 $bootstrap_settings['skip_astman'] = true;
-if (!@include_once(getenv('FREEPBX_CONF') ? getenv('FREEPBX_CONF') : '/etc/freepbx.conf')) {
+
+if (!@include_once(getenv('FREEPBX_CONF') ? getenv('FREEPBX_CONF') : '/etc/freepbx.conf')) 
+{
     include_once('/etc/asterisk/freepbx.conf');
 }
 
 // Basic sanity checks for MAC and user agent
-if(!isset($_GET['mac']) || preg_match('/^([a-f0-9]{12})$/', $_GET['mac']) != 1 
-	|| strpos($_SERVER['HTTP_USER_AGENT'], 'Polycom') === false)
-		polycomphone_send_forbidden();
+if(!isset($_GET['mac']) || preg_match('/^([a-f0-9]{12})$/', $_GET['mac']) != 1 || strpos($_SERVER['HTTP_USER_AGENT'], 'Poly') === false)
+{
+	polycomphone_send_forbidden();
+}
 
 // Lookup IP to determine if authentication or SSL is required
 $network = polycomphones_get_networks_ip($_SERVER['REMOTE_ADDR']);
+
 polycomphones_check_network($network);
 
 $xml = new SimpleXMLElement(
@@ -185,12 +189,23 @@ $xml = new SimpleXMLElement(
 </polycomConfig>');
 
 $matches = array();
+// FileTransport PolycomVVX-VVX_450-UA/5.9.1.0615 Type/Application
 preg_match('/FileTransport Polycom([^\/.]+)\/([\w\.]+)/', $_SERVER['HTTP_USER_AGENT'], $matches);
 
 // Require version and model to be provided
-if(empty($matches[1]) || empty($matches[2]))
-	polycomphone_send_forbidden();
 
+if(empty($matches[1]) || empty($matches[2]))
+{
+	// Check for polyedge
+	// FileTransport PolyEdge-Edge_E450-UA/8.0.0.15602 Type/Application
+	preg_match('/FileTransport PolyEdge-([^\/.]+)\/([\w\.]+)/', $_SERVER['HTTP_USER_AGENT'], $matches);
+	if(empty($matches[1]) || empty($matches[2]))
+	{
+		polycomphone_send_forbidden();
+	}
+}
+
+// querystring mac comes from a rewrite in .htaccess
 $id = polycomphones_lookup_mac($_GET['mac']);
 
 $general = polycomphones_get_general_edit();
@@ -216,7 +231,9 @@ else
 
 	// If model known require it to match the user agent
 	if(!empty($device['model']) && strpos($_SERVER['HTTP_USER_AGENT'], $device['model']) === false)
+	{
 		polycomphone_send_forbidden();
+	}
 
 	sql("UPDATE polycom_devices SET 
 			lastconfig = NOW(), 

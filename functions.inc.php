@@ -637,32 +637,47 @@ function polycomphones_get_networks_ip($ip)
 	$results = sql("SELECT id, cidr FROM polycom_networks ORDER BY cidr DESC",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $result)
-		if(polycomphones_cidr_ip_check($ip, $result['cidr']))
+	{
+		if (polycomphones_cidr_ip_check($ip, $result['cidr']))
+		{
 			return polycomphones_get_networks_edit($result['id']);
+		}
+	}
 }
 
 function polycomphones_check_network($network)
 {
-	if($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
+	if ($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
+	{
 		polycomphone_send_forbidden();
+	}
+	
 	
 	// Network has authentication disabled
 	if(empty($network['settings']['prov_username']))
+	{
 		return;
+	}
 	
 	if (!isset($_SERVER['PHP_AUTH_USER']))
+	{
 		polycomphone_send_unauthorized();
+	}
 	
 	$users = explode('|', $network['settings']['prov_username']);
 	$passwords = explode('|', $network['settings']['prov_password']);
 	
 	if(count($users) != count($passwords))
+	{
 		polycomphone_send_unauthorized();
+	}
 	
 	for($i=0;$i<count($users);$i++)
 	{
 		if($users[$i] == $_SERVER['PHP_AUTH_USER'] && $passwords[$i] == $_SERVER['PHP_AUTH_PW'])
+		{
 			return;
+		}
 	}
 	
 	polycomphone_send_unauthorized();
