@@ -3,7 +3,7 @@
 	<repo>standard</repo>
 	<name>Polycom Phones</name>
 	<version>16.0.0</version>
-	<publisher>Excalibur Partners, LLC</publisher>
+	<publisher>Techie Networks Inc</publisher>
 	<license>GPLv2+</license>
 	<category>Connectivity</category>
 	<menuitems>
@@ -34,6 +34,6 @@
 		*2.11.0.0* Initial release for UC software
 	</changelog>
 	<depends>
-		<version>14.0.0</version>
+		<version>16.0.0</version>
 	</depends>
 </module>
