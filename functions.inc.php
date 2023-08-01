@@ -258,7 +258,7 @@ function polycomphones_get_phones_list()
 			LEFT OUTER JOIN devices ON devices.id = polycom_device_lines.deviceid
 			LEFT OUTER JOIN users ON devices.user = users.extension
 			LEFT OUTER JOIN polycom_externallines ON polycom_externallines.id = polycom_device_lines.externalid
-			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result[id])}\"
+			WHERE polycom_device_lines.id = \"{$db->escapeSimple($result['id'])}\"
 			ORDER BY polycom_device_lines.lineid",'getAll',DB_FETCHMODE_ASSOC);
 	
 	return $results;
@@ -449,7 +449,7 @@ function polycomphones_save_phones_directory($mac, $directory)
 
 	foreach($directory as $contact)
 	{
-		$child = $xml->item_list->addChild(item);
+		$child = $xml->item_list->addChild("item");
 		
 		foreach($fields as $field)
 			$child->addChild($field, $contact[$field]);
@@ -637,32 +637,47 @@ function polycomphones_get_networks_ip($ip)
 	$results = sql("SELECT id, cidr FROM polycom_networks ORDER BY cidr DESC",'getAll',DB_FETCHMODE_ASSOC);
 	
 	foreach($results as $result)
-		if(polycomphones_cidr_ip_check($ip, $result['cidr']))
+	{
+		if (polycomphones_cidr_ip_check($ip, $result['cidr']))
+		{
 			return polycomphones_get_networks_edit($result['id']);
+		}
+	}
 }
 
 function polycomphones_check_network($network)
 {
-	if($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
+	if ($network['settings']['prov_ssl'] == '1' && empty($_SERVER['HTTPS']))
+	{
 		polycomphone_send_forbidden();
+	}
+	
 	
 	// Network has authentication disabled
 	if(empty($network['settings']['prov_username']))
+	{
 		return;
+	}
 	
 	if (!isset($_SERVER['PHP_AUTH_USER']))
+	{
 		polycomphone_send_unauthorized();
+	}
 	
 	$users = explode('|', $network['settings']['prov_username']);
 	$passwords = explode('|', $network['settings']['prov_password']);
 	
 	if(count($users) != count($passwords))
+	{
 		polycomphone_send_unauthorized();
+	}
 	
 	for($i=0;$i<count($users);$i++)
 	{
 		if($users[$i] == $_SERVER['PHP_AUTH_USER'] && $passwords[$i] == $_SERVER['PHP_AUTH_PW'])
+		{
 			return;
+		}
 	}
 	
 	polycomphone_send_unauthorized();
@@ -747,13 +762,13 @@ function polycomphones_dropdown_lines($id)
 	if(count($lines) > 0)
 		$dropdown['FreePBX'] = $lines;
 	
-	$results = sql("SELECT id, name FROM polycom_externallines",'getAll',DB_FETCHMODE_ASSOC);	
+	//$results = sql("SELECT id, name FROM polycom_externallines",'getAll',DB_FETCHMODE_ASSOC);	
 
-	foreach($results as $result)
-		$externallines['external_' . $result['id']]=$result['name'];
+	//foreach($results as $result)
+	//	$externallines['external_' . $result['id']]=$result['name'];
 		
-	if(count($externallines) > 0)
-		$dropdown['External'] = $externallines;
+	//if(count($externallines) > 0)
+	//	$dropdown['External'] = $externallines;
 	
 	return $dropdown;
 }
@@ -1002,8 +1017,9 @@ function polycomphones_check_module($module)
 function polycomphones_get_kvstore($key)
 {
 	global $db;
-	return sql("SELECT val FROM kvstore
-		WHERE `key` = '".$db->escapeSimple($key)."' AND module = 'Sipsettings'",'getOne');
+	// For FPBX 14, kvstore goes away, and kvstore_Sipsettings is now the place
+	return sql("SELECT val FROM kvstore_Sipsettings
+		WHERE `key` = '".$db->escapeSimple($key)."'",'getOne');
 }
 
 function polycomphones_getvalue($id, $device, $global)

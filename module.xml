@@ -2,8 +2,8 @@
 	<rawname>polycomphones</rawname>
 	<repo>standard</repo>
 	<name>Polycom Phones</name>
-	<version>13.0.0</version>
-	<publisher>Excalibur Partners, LLC</publisher>
+	<version>16.0.0</version>
+	<publisher>Techie Networks Inc</publisher>
 	<license>GPLv2+</license>
 	<category>Connectivity</category>
 	<menuitems>
@@ -11,27 +11,11 @@
 	</menuitems>
 	<description>Adds configurations, options and GUI for Polycom phones</description>
 	<changelog>
-		*13.0.0* Add PJSIP support, improve security, and switch to FreePBX 13 layouts
-		*2.11.0.17* Adds multiple extension assignment and integration with Kamailio module
-		*2.11.0.16* Fixed another compatibility issue with FreePBX 13
-		*2.11.0.15* Adds options to change phone provisioning settings and enhance security
-		*2.11.0.14* Fixed compatibility issue with FreePBX 13
-		*2.11.0.13* Adds device password options, support for new Polycom MACs, and compatibility for FreePBX 13
-		*2.11.0.12* Adds loud ringer option and enables n-way conference
-		*2.11.0.11* Adds NTP options and phone display update on adhoc login
-		*2.11.0.10* Adds integration with phone features module
-		*2.11.0.9* Fixed a bug introduced with flexible line assignment
-		*2.11.0.8* Adds flexible line key assignment
-		*2.11.0.7* Adds codec priority options to network settings
-		*2.11.0.6* Adds additional attendant options and option subheadings
-		*2.11.0.5* Adds support for phone overrides, additional options and help popups
-		*2.11.0.4* Adds authentication options to network settings
-		*2.11.0.3* Adds network settings and additional phone options
-		*2.11.0.2* Adds power saving settings and additional help popups
-		*2.11.0.1* Adds alert info, corporate settings and additional phone options
-		*2.11.0.0* Initial release for UC software
+		*16.0.0* FreePBX 16 support
+		*14.0.0* FreePBX 14 support
+		Forked from Excalibur Partners.
 	</changelog>
 	<depends>
-		<version>13.0.0</version>
+		<version>16.0.0</version>
 	</depends>
 </module>
